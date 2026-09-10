@@ -1,9 +1,9 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, memo } from 'react'
 import { motion } from 'framer-motion'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { PHOTOS } from '../photosData'
 
-export default function ImageModal({ photo, onClose, onNavigate }) {
+function ImageModal({ photo, onClose, onNavigate }) {
   /* Lock body scroll */
   useEffect(() => {
     document.body.style.overflow = 'hidden'
@@ -157,3 +157,5 @@ export default function ImageModal({ photo, onClose, onNavigate }) {
     </motion.div>
   )
 }
+
+export default memo(ImageModal)

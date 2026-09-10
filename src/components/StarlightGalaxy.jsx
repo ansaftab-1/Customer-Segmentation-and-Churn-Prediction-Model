@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useEffect, useState, useCallback, memo } from 'react'
 import { motion, AnimatePresence, useInView } from 'framer-motion'
 import { X, Download, Heart } from 'lucide-react'
 import { PHOTOS } from '../photosData'
@@ -14,7 +14,7 @@ const GALAXY_CARDS = [
 ]
 
 /* ── Twinkling Starfield + Shooting Stars Canvas ── */
-function StarCanvas({ mouseRef, isInView = true }) {
+const StarCanvas = memo(function StarCanvas({ mouseRef, isInView = true }) {
   const canvasRef = useRef(null)
 
   useEffect(() => {
@@ -133,24 +133,25 @@ function StarCanvas({ mouseRef, isInView = true }) {
       }}
     />
   )
-}
+})
 
 /* ── Galaxy Photo Modal — cinematic zoom ── */
-function GalaxyModal({ photo, onClose }) {
-  if (!photo) return null
-
+const GalaxyModal = memo(function GalaxyModal({ photo, onClose }) {
   useEffect(() => {
+    if (!photo) return
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
-  }, [])
+  }, [photo])
 
   useEffect(() => {
+    if (!photo) return
     const onKey = (e) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  }, [photo, onClose])
 
-  const handleDownload = () => {
+  const handleDownload = useCallback(() => {
+    if (!photo) return
     const link = document.createElement('a')
     link.href = photo.src
     link.download = `${photo.title || 'photo'}.jpg`
@@ -158,7 +159,9 @@ function GalaxyModal({ photo, onClose }) {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-  }
+  }, [photo])
+
+  if (!photo) return null
 
   return (
     <motion.div
@@ -305,7 +308,7 @@ function GalaxyModal({ photo, onClose }) {
       </motion.div>
     </motion.div>
   )
-}
+})
 
 /* ═══════════════════════════════════════════════════════════
    MAIN STARLIGHT GALAXY
@@ -314,7 +317,7 @@ function GalaxyModal({ photo, onClose }) {
    frame (60x/sec), causing full React re-renders. Now uses
    direct DOM manipulation via refs — zero re-renders during
    animation. Cards are only positioned via transform. */
-export default function StarlightGalaxy() {
+function StarlightGalaxy() {
   const [selectedPhoto, setSelectedPhoto] = useState(null)
   const [activeGlowId, setActiveGlowId] = useState(null)
 
@@ -460,10 +463,10 @@ export default function StarlightGalaxy() {
     }
   }, [isInView])
 
-  const handleCardClick = (card) => {
+  const handleCardClick = useCallback((card) => {
     setActiveGlowId(card.id)
     setTimeout(() => setSelectedPhoto(card), 250)
-  }
+  }, [])
 
   return (
     <section
@@ -696,3 +699,5 @@ export default function StarlightGalaxy() {
     </section>
   )
 }
+
+export default memo(StarlightGalaxy)
