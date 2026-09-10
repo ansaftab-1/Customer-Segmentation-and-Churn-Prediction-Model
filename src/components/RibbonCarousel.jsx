@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, useState, useCallback } from 'react'
+import { useEffect, useRef, useMemo, useState, useCallback, memo } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { PHOTOS } from '../photosData'
 
@@ -34,7 +34,7 @@ const LOOKUP_SAMPLES = 600
    LAYER: LIVING SUNLIGHT & BOKEH PARTICLES CANVAS
    Living golden hour light source + drifting champagne dust
    ══════════════════════════════════════════════════════════════ */
-function LivingAtmosphereCanvas({ mouseRef, focalPosRef, isInView = true }) {
+const LivingAtmosphereCanvas = memo(function LivingAtmosphereCanvas({ mouseRef, focalPosRef, isInView = true }) {
   const canvasRef = useRef(null)
 
   useEffect(() => {
@@ -101,51 +101,44 @@ function LivingAtmosphereCanvas({ mouseRef, focalPosRef, isInView = true }) {
       ctx.fillStyle = sunBeamGrad
       ctx.fillRect(0, 0, w, h)
 
-      // 2. Dynamic Focal Memory Spotlight
-      if (focalPosRef.current) {
+      // 2. Optical Lens Glint tracking the focal ribbon node
+      if (focalPosRef?.current) {
         const fx = (focalPosRef.current.x / 100) * w
         const fy = (focalPosRef.current.y / 100) * h
-        const spotGrad = ctx.createRadialGradient(fx, fy, 0, fx, fy, isMobile ? 120 : 180)
-        spotGrad.addColorStop(0, 'rgba(197, 155, 39, 0.12)')
-        spotGrad.addColorStop(0.6, 'rgba(245, 230, 205, 0.04)')
-        spotGrad.addColorStop(1, 'rgba(245, 230, 205, 0)')
-        ctx.fillStyle = spotGrad
-        ctx.fillRect(0, 0, w, h)
+
+        const glintGrad = ctx.createRadialGradient(fx, fy, 0, fx, fy, isMobile ? 80 : 140)
+        glintGrad.addColorStop(0, 'rgba(255, 245, 200, 0.35)')
+        glintGrad.addColorStop(0.3, 'rgba(255, 215, 0, 0.12)')
+        glintGrad.addColorStop(1, 'transparent')
+        ctx.fillStyle = glintGrad
+        ctx.beginPath()
+        ctx.arc(fx, fy, isMobile ? 80 : 140, 0, Math.PI * 2)
+        ctx.fill()
       }
 
-      // 3. Drifting Golden Dust & Bokeh Motes
+      // 3. Champagne Bokeh & Golden Dust Motes
       particles.forEach((p) => {
-        p.x += p.speedX + Math.sin(time + p.phase) * 0.2
+        p.x += p.speedX
         p.y += p.speedY
-        p.phase += p.pulseSpeed
+        p.alpha = p.baseAlpha + Math.sin(time * 3 + p.phase) * 0.12
 
         // Wrap around boundaries
-        if (p.y < -30) {
-          p.y = h + 20
-          p.x = Math.random() * w
-        }
-        if (p.x < -30) p.x = w + 20
-        if (p.x > w + 30) p.x = -20
+        if (p.x < -20) p.x = w + 20
+        if (p.x > w + 20) p.x = -20
+        if (p.y < -20) p.y = h + 20
+        if (p.y > h + 20) p.y = -20
 
-        const currentAlpha = p.baseAlpha * (0.6 + Math.sin(p.phase) * 0.4)
-
-        if (p.radius > 5) {
-          // Soft Bokeh Orb
-          const orbGrad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius)
-          orbGrad.addColorStop(0, `hsla(${p.hue}, 70%, 65%, ${currentAlpha * 0.8})`)
-          orbGrad.addColorStop(0.5, `hsla(${p.hue}, 60%, 60%, ${currentAlpha * 0.3})`)
-          orbGrad.addColorStop(1, `hsla(${p.hue}, 50%, 55%, 0)`)
-          ctx.fillStyle = orbGrad
-          ctx.beginPath()
-          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2)
-          ctx.fill()
-        } else {
-          // Sharp Golden Speck
-          ctx.fillStyle = `hsla(${p.hue}, 75%, 60%, ${currentAlpha})`
-          ctx.beginPath()
-          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2)
-          ctx.fill()
-        }
+        ctx.save()
+        ctx.globalAlpha = Math.max(0, Math.min(1, p.alpha))
+        const pGrad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius)
+        pGrad.addColorStop(0, `hsla(${p.hue}, 90%, 85%, 0.8)`)
+        pGrad.addColorStop(0.5, `hsla(${p.hue}, 80%, 65%, 0.25)`)
+        pGrad.addColorStop(1, `hsla(${p.hue}, 70%, 50%, 0)`)
+        ctx.fillStyle = pGrad
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.restore()
       })
 
       animId = requestAnimationFrame(render)
@@ -172,13 +165,13 @@ function LivingAtmosphereCanvas({ mouseRef, focalPosRef, isInView = true }) {
       }}
     />
   )
-}
+})
 
 /* ══════════════════════════════════════════════════════════════
    LAYER: CINEMATIC EDITORIAL TITLE
    Breathing typography · Luminous gold shimmer · Clear high-contrast reveal
    ══════════════════════════════════════════════════════════════ */
-function CinematicHeroTitle({ activePhoto }) {
+const CinematicHeroTitle = memo(function CinematicHeroTitle({ activePhoto }) {
   return (
     <div
       className="absolute pointer-events-none z-30 max-w-[92vw] sm:max-w-[75vw]"
@@ -324,12 +317,12 @@ function CinematicHeroTitle({ activePhoto }) {
       )}
     </div>
   )
-}
+})
 
 /* ══════════════════════════════════════════════════════════════
    LAYER: EDITORIAL CORNER COUNTER & CONTROL INDICATOR
    ══════════════════════════════════════════════════════════════ */
-function EditorialMetaInfo({ currentFocalIndex, totalUnique }) {
+const EditorialMetaInfo = memo(function EditorialMetaInfo({ currentFocalIndex, totalUnique }) {
   const formattedIndex = String((currentFocalIndex % totalUnique) + 1).padStart(2, '0')
   const formattedTotal = String(totalUnique).padStart(2, '0')
 
@@ -387,12 +380,12 @@ function EditorialMetaInfo({ currentFocalIndex, totalUnique }) {
       </span>
     </div>
   )
-}
+})
 
 /* ══════════════════════════════════════════════════════════════
    LAYER: INTERACTION GUIDES & SCROLL INDICATOR
    ══════════════════════════════════════════════════════════════ */
-function InteractionControls() {
+const InteractionControls = memo(function InteractionControls() {
   return (
     <div
       className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex flex-col items-center gap-1.5"
@@ -437,12 +430,12 @@ function InteractionControls() {
       </div>
     </div>
   )
-}
+})
 
 /* ══════════════════════════════════════════════════════════════
    LAYER: CINEMATIC BACKGROUND VIDEO (0.5x Slow Playback)
    ══════════════════════════════════════════════════════════════ */
-function Page2BackgroundVideo({ isInView = true }) {
+const Page2BackgroundVideo = memo(function Page2BackgroundVideo({ isInView = true }) {
   const videoRef = useRef(null)
 
   useEffect(() => {
@@ -479,8 +472,8 @@ function Page2BackgroundVideo({ isInView = true }) {
       <div
         className="w-full h-full"
         style={{
-          maskImage: 'linear-gradient(to bottom, transparent 0%, black 16%, black 84%, transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 16%, black 84%, transparent 100%)',
+          maskImage: 'linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%)',
         }}
       >
         <video
@@ -515,12 +508,58 @@ function Page2BackgroundVideo({ isInView = true }) {
       />
     </div>
   )
-}
+})
+
+/* ── Memoized 24 Cards Field: Prevents re-rendering 24 cards on focal index change ── */
+const RibbonCardsField = memo(function RibbonCardsField({ cards, cardRefs, onPhotoClick, velocityRef }) {
+  return (
+    <>
+      {cards.map((card, i) => (
+        <div
+          key={`ribbon-card-${card.idx}`}
+          ref={(el) => { cardRefs.current[i] = el }}
+          className="ribbon-polaroid pointer-events-auto"
+          onClick={(e) => {
+            if (Math.abs(velocityRef.current) < 0.003) {
+              e.stopPropagation()
+              onPhotoClick(card)
+            }
+          }}
+          data-cursor="VIEW"
+          style={{
+            willChange: 'transform, left, top, opacity',
+            transformOrigin: 'center center',
+          }}
+        >
+          <div className="ribbon-polaroid-img">
+            <img
+              src={card.src}
+              alt={card.title}
+              loading={i < 8 ? 'eager' : 'lazy'}
+              draggable={false}
+            />
+          </div>
+          <div
+            className="text-center pt-0.5 overflow-hidden text-ellipsis whitespace-nowrap"
+            style={{
+              fontFamily: 'var(--font-script)',
+              fontSize: 'clamp(9px, 1.8vw, 12px)',
+              color: '#573d21',
+              lineHeight: 1.2,
+            }}
+          >
+            {card.title}
+          </div>
+        </div>
+      ))}
+    </>
+  )
+})
 
 /* ══════════════════════════════════════════════════════════════
    MAIN COMPONENT: RIBBON CAROUSEL (LIVING 3D MEMORY FIELD)
    ══════════════════════════════════════════════════════════════ */
-export default function RibbonCarousel({ onPhotoClick, isViewerOpen = false }) {
+function RibbonCarousel({ onPhotoClick, isViewerOpen = false }) {
   const sectionRef = useRef(null)
   const isSectionInView = useInView(sectionRef, { margin: '200px 0px' })
 
@@ -865,7 +904,7 @@ export default function RibbonCarousel({ onPhotoClick, isViewerOpen = false }) {
 
       if (Math.abs(time - lastFocalCheck) > 0.15) {
         lastFocalCheck = time
-        setFocalCardIndex(bestFocalCard)
+        setFocalCardIndex((prev) => (prev !== bestFocalCard ? bestFocalCard : prev))
       }
 
       rafRef.current = requestAnimationFrame(tick)
@@ -924,46 +963,12 @@ export default function RibbonCarousel({ onPhotoClick, isViewerOpen = false }) {
           transition: 'transform 0.1s ease-out',
         }}
       >
-        {cards.map((card, i) => (
-          <div
-            key={`ribbon-card-${card.idx}`}
-            ref={(el) => { cardRefs.current[i] = el }}
-            className="ribbon-polaroid pointer-events-auto"
-            onClick={(e) => {
-              // Prevent click trigger during intentional drag
-              if (Math.abs(velocityRef.current) < 0.003) {
-                e.stopPropagation()
-                onPhotoClick(card)
-              }
-            }}
-            data-cursor="VIEW"
-            style={{
-              willChange: 'transform, left, top, opacity',
-              transformOrigin: 'center center',
-            }}
-          >
-            <div className="ribbon-polaroid-img">
-              <img
-                src={card.src}
-                alt={card.title}
-                loading={i < 8 ? 'eager' : 'lazy'}
-                draggable={false}
-              />
-            </div>
-            {/* Subtle caption beneath Polaroid */}
-            <div
-              className="text-center pt-0.5 overflow-hidden text-ellipsis whitespace-nowrap"
-              style={{
-                fontFamily: 'var(--font-script)',
-                fontSize: 'clamp(9px, 1.8vw, 12px)',
-                color: '#573d21',
-                lineHeight: 1.2,
-              }}
-            >
-              {card.title}
-            </div>
-          </div>
-        ))}
+        <RibbonCardsField
+          cards={cards}
+          cardRefs={cardRefs}
+          onPhotoClick={onPhotoClick}
+          velocityRef={velocityRef}
+        />
       </div>
 
       {/* ── Bottom Controls & Scroll Down Indicator ── */}
@@ -971,3 +976,5 @@ export default function RibbonCarousel({ onPhotoClick, isViewerOpen = false }) {
     </section>
   )
 }
+
+export default memo(RibbonCarousel)
