@@ -1,11 +1,11 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, memo } from 'react'
 import { motion } from 'framer-motion'
 
 /* ══════════════════════════════════════════════════════════════
    WIND PARTICLES: FLOATING GOLDEN LEAVES & FLOWER PETALS CANVAS
    Organic 3D tumbling, wind gusts, fluttering tilt & swaying physics
    ══════════════════════════════════════════════════════════════ */
-function FloatingFloraCanvas({ isVisible = true }) {
+const FloatingFloraCanvas = memo(function FloatingFloraCanvas({ isVisible = true }) {
   const canvasRef = useRef(null)
 
   useEffect(() => {
@@ -227,10 +227,10 @@ function FloatingFloraCanvas({ isVisible = true }) {
       style={{ opacity: 0.95 }}
     />
   )
-}
+})
 
 /* ── Floating Gold Dust Particles Canvas ── */
-function GoldDustCanvas({ isVisible = true }) {
+const GoldDustCanvas = memo(function GoldDustCanvas({ isVisible = true }) {
   const canvasRef = useRef(null)
 
   useEffect(() => {
@@ -325,10 +325,10 @@ function GoldDustCanvas({ isVisible = true }) {
       className="absolute inset-0 w-full h-full pointer-events-none z-10"
     />
   )
-}
+})
 
 /* ── Sparkling Twinkle Starburst Glints on Gold Foliage ── */
-function FoliageTwinkles() {
+const FoliageTwinkles = memo(function FoliageTwinkles() {
   const glints = [
     { top: '8%', left: '10%', delay: 0, size: 14 },
     { top: '15%', left: '18%', delay: 1.8, size: 12 },
@@ -381,12 +381,12 @@ function FoliageTwinkles() {
       ))}
     </div>
   )
-}
+})
 
 /* ══════════════════════════════════════════════════════════════
    FULL-SCREEN ANIMATED WATERCOLOR & GOLD GLITTER BACKGROUND
    ══════════════════════════════════════════════════════════════ */
-export default function WatercolorGoldBackground({ isVisible = true }) {
+function WatercolorGoldBackground({ isVisible = true }) {
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none select-none z-0">
       {/* 1. User Uploaded Deep Navy Watercolor Image Layer with Gentle Breathing */}
@@ -459,3 +459,5 @@ export default function WatercolorGoldBackground({ isVisible = true }) {
     </div>
   )
 }
+
+export default memo(WatercolorGoldBackground)

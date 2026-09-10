@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useEffect, useState, useCallback, memo } from 'react'
 import { motion, useInView } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import WatercolorGoldBackground from './WatercolorGoldBackground'
@@ -109,7 +109,7 @@ function smoothGlideTo(targetElement, duration = 3200) {
 /* ═══════════════════════════════════════════════════════════
    MAIN ROYAL BIRTHDAY FINALE COMPONENT (ACT 1)
    ═══════════════════════════════════════════════════════════ */
-export default function BirthdayFinale() {
+function BirthdayFinale() {
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
   const isSectionActive = useInView(sectionRef, { margin: '150px 0px' })
@@ -488,3 +488,5 @@ export default function BirthdayFinale() {
     </section>
   )
 }
+
+export default memo(BirthdayFinale)
