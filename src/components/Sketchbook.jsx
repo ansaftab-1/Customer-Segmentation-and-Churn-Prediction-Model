@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { PHOTOS } from '../photosData'
@@ -29,7 +29,7 @@ const ASSETS = {
    DECORATIVE SCRAPBOOK ELEMENTS
    ═══════════════════════════════════════════════════════════ */
 
-function WashiTape({ top, left, right, bottom, color = 'rgba(197, 155, 39, 0.35)', rotation = -4, width = 70 }) {
+const WashiTape = memo(function WashiTape({ top, left, right, bottom, color = 'rgba(197, 155, 39, 0.35)', rotation = -4, width = 70 }) {
   return (
     <div
       style={{
@@ -53,10 +53,10 @@ function WashiTape({ top, left, right, bottom, color = 'rgba(197, 155, 39, 0.35)
       }} />
     </div>
   )
-}
+})
 
 /* Animated Flower component that preserves infinite loop animation */
-function AnimatedPageFlower({ src, style = {}, size = 95, rotation = 0, className = '' }) {
+const AnimatedPageFlower = memo(function AnimatedPageFlower({ src, style = {}, size = 95, rotation = 0, className = '' }) {
   return (
     <div
       style={{
@@ -84,9 +84,9 @@ function AnimatedPageFlower({ src, style = {}, size = 95, rotation = 0, classNam
       />
     </div>
   )
-}
+})
 
-function DecorativeLine({ style = {} }) {
+const DecorativeLine = memo(function DecorativeLine({ style = {} }) {
   return (
     <div style={{
       width: 70,
@@ -95,10 +95,10 @@ function DecorativeLine({ style = {} }) {
       ...style,
     }} />
   )
-}
+})
 
 /* Polaroid photo component with washi tape */
-function ScrapPhoto({ src, alt, width = 110, rotation = 0, tapeColor, style = {} }) {
+const ScrapPhoto = memo(function ScrapPhoto({ src, alt, width = 110, rotation = 0, tapeColor, style = {} }) {
   return (
     <div style={{
       position: 'relative',
@@ -112,7 +112,7 @@ function ScrapPhoto({ src, alt, width = 110, rotation = 0, tapeColor, style = {}
       ...style,
     }}>
       {tapeColor && (
-        <WashiTape top={-9} left="18%" color={tapeColor} rotation={Math.random() * 6 - 3} width={width * 0.55} />
+        <WashiTape top={-9} left="18%" color={tapeColor} rotation={rotation >= 0 ? -2.5 : 2.5} width={width * 0.55} />
       )}
       <img
         src={src}
@@ -123,10 +123,10 @@ function ScrapPhoto({ src, alt, width = 110, rotation = 0, tapeColor, style = {}
       />
     </div>
   )
-}
+})
 
 /* Polaroid video component with washi tape & glass luster */
-function ScrapVideo({
+const ScrapVideo = memo(function ScrapVideo({
   src,
   width = 150,
   rotation = 0,
@@ -210,14 +210,14 @@ function ScrapVideo({
       )}
     </div>
   )
-}
+})
 
 /* ═══════════════════════════════════════════════════════════
    PAGE 5: MERGED DUAL-VIDEO CELESTIAL BACKGROUND
    Seamless Synchronized Fusion of Golden Wave & Cosmic Spiral
    Zero delay, lockstep preloading, 60fps compositing
    ═══════════════════════════════════════════════════════════ */
-function MergedDualVideoBackground({ videoSrc1, videoSrc2 }) {
+const MergedDualVideoBackground = memo(function MergedDualVideoBackground({ videoSrc1, videoSrc2 }) {
   const vRef1 = useRef(null)
   const vRef2 = useRef(null)
   const containerRef = useRef(null)
@@ -411,7 +411,7 @@ function MergedDualVideoBackground({ videoSrc1, videoSrc2 }) {
       />
     </div>
   )
-}
+})
 
 /* Handwritten text style */
 const handStyle = {
@@ -1290,7 +1290,7 @@ function BackCoverInside() {
    MAIN SKETCHBOOK COMPONENT
    Realistic Dual-Sided 3D Page Turning Engine
    ═══════════════════════════════════════════════════════════ */
-export default function Sketchbook() {
+function Sketchbook() {
   const [open, setOpen] = useState(false)
   const [index, setIndex] = useState(0)
   const [flip, setFlip] = useState(null)
@@ -1810,3 +1810,5 @@ function navBtnStyle(disabled) {
     backdropFilter: 'blur(8px)',
   }
 }
+
+export default memo(Sketchbook)

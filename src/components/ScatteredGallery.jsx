@@ -1,9 +1,9 @@
-import { useMemo, useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect, useCallback, memo } from 'react'
 import { motion } from 'framer-motion'
 import { PHOTOS } from '../photosData'
 
 /* ── Heart SVG Badge ── */
-function HeartBadge() {
+const HeartBadge = memo(function HeartBadge() {
   return (
     <svg
       className="gallery-heart"
@@ -14,7 +14,7 @@ function HeartBadge() {
       <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
     </svg>
   )
-}
+})
 
 /* ── Card layout data — three depth layers with parallax multipliers ── */
 const CARD_LAYOUTS = [
@@ -66,13 +66,15 @@ const CARD_LAYOUTS = [
 ]
 
 /* ── Single Gallery Card ── */
-function GalleryCard({ layout, photo, onClick, index }) {
+const GalleryCard = memo(function GalleryCard({ layout, photo, onClick, index }) {
   const depthClass =
     layout.depth === 'bg'
       ? 'depth-bg'
       : layout.depth === 'mid'
         ? 'depth-mid'
         : ''
+
+  const initialRotOffset = index % 2 === 0 ? 8 : -8
 
   return (
     <motion.div
@@ -94,7 +96,7 @@ function GalleryCard({ layout, photo, onClick, index }) {
           width: layout.w,
           transform: `rotate(${layout.rot}deg)`,
         }}
-        initial={{ opacity: 0, y: 50, scale: 0.8, rotate: layout.rot + (Math.random() > 0.5 ? 8 : -8) }}
+        initial={{ opacity: 0, y: 50, scale: 0.8, rotate: layout.rot + initialRotOffset }}
         whileInView={{ opacity: 1, y: 0, scale: 1, rotate: layout.rot }}
         viewport={{ once: true, margin: '-80px' }}
         transition={{
@@ -130,10 +132,10 @@ function GalleryCard({ layout, photo, onClick, index }) {
       </motion.div>
     </motion.div>
   )
-}
+})
 
 /* ── Page 3 Video Background (0.5x Slow Playback) ── */
-function GalleryBackgroundVideo() {
+const GalleryBackgroundVideo = memo(function GalleryBackgroundVideo() {
   const videoRef = useRef(null)
 
   useEffect(() => {
@@ -196,10 +198,10 @@ function GalleryBackgroundVideo() {
       />
     </div>
   )
-}
+})
 
 /* ── Main Scattered Gallery with Mouse-Tracking Parallax ── */
-export default function ScatteredGallery({ onPhotoClick }) {
+function ScatteredGallery({ onPhotoClick }) {
   const sectionRef = useRef(null)
   const containerRef = useRef(null)
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 })
@@ -331,3 +333,5 @@ export default function ScatteredGallery({ onPhotoClick }) {
     </section>
   )
 }
+
+export default memo(ScatteredGallery)
