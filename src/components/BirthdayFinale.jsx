@@ -47,7 +47,7 @@ function fireConfetti() {
 
 /* ── Cinematic Ultra-Smooth Slow Glide ── */
 function smoothGlideTo(targetElement, duration = 3200) {
-  if (!targetElement) return () => {}
+  if (!targetElement) return () => { }
 
   const rootEl = document.documentElement
   const bodyEl = document.body
@@ -65,7 +65,7 @@ function smoothGlideTo(targetElement, duration = 3200) {
   if (Math.abs(distance) < 5) {
     rootEl.style.scrollBehavior = prevRootBehavior
     bodyEl.style.scrollBehavior = prevBodyBehavior
-    return () => {}
+    return () => { }
   }
 
   let startTime = null
@@ -193,11 +193,11 @@ function BirthdayFinale() {
           animate={isInView ? { opacity: 1, scale: 1, y: 0 } : {}}
           transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
         >
-          {/* Decorative Corner Filigree Stars */}
-          <span className="absolute top-3 left-3.5 text-[11px] select-none" style={{ color: '#FFD700', opacity: 0.6 }}>✦</span>
-          <span className="absolute top-3 right-3.5 text-[11px] select-none" style={{ color: '#FFD700', opacity: 0.6 }}>✦</span>
-          <span className="absolute bottom-3 left-3.5 text-[11px] select-none" style={{ color: '#FFD700', opacity: 0.6 }}>✦</span>
-          <span className="absolute bottom-3 right-3.5 text-[11px] select-none" style={{ color: '#FFD700', opacity: 0.6 }}>✦</span>
+          {/* Decorative Corner Dots */}
+          <span className="absolute top-3 left-3.5 text-[11px] select-none" style={{ color: '#FFD700', opacity: 0.6 }}>·</span>
+          <span className="absolute top-3 right-3.5 text-[11px] select-none" style={{ color: '#FFD700', opacity: 0.6 }}>·</span>
+          <span className="absolute bottom-3 left-3.5 text-[11px] select-none" style={{ color: '#FFD700', opacity: 0.6 }}>·</span>
+          <span className="absolute bottom-3 right-3.5 text-[11px] select-none" style={{ color: '#FFD700', opacity: 0.6 }}>·</span>
 
           {/* Chapter & Milestone Pill Badge */}
           <motion.div
@@ -224,7 +224,7 @@ function BirthdayFinale() {
               color: '#FFE699',
               textShadow: '0 0 10px rgba(255, 230, 153, 0.5)',
             }}>
-              ✦ Chapter One · A Special Milestone ✦
+              A Special Milestone
             </span>
           </motion.div>
 
@@ -358,7 +358,7 @@ function BirthdayFinale() {
                   className="wish-button"
                   onClick={handleWish}
                 >
-                  Make a Wish ✨
+                  Make a Wish
                 </button>
                 <p
                   style={{
@@ -396,7 +396,7 @@ function BirthdayFinale() {
                     wordBreak: 'break-word',
                   }}
                 >
-                  May all your sweetest dreams come true ✨
+                  May all your sweetest dreams come true
                 </div>
 
                 {/* Heartfelt Poetic Blessing Line */}

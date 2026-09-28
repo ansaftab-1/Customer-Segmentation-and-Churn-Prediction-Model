@@ -13,6 +13,7 @@ const ASSETS = {
   page2Video: '/2-page.mp4',
   page3Image: '/design-01m0jnzgyd-1787334029.png',
   page4Video: '/page-3.mp4',
+  memoriesVideo: '/page-4.mp4',
   page5Video1: '/pagge-5 (1).mp4',
   page5Video2: '/pagge-5 (2).mp4',
   flowers: [
@@ -56,11 +57,12 @@ const WashiTape = memo(function WashiTape({ top, left, right, bottom, color = 'r
 })
 
 /* Animated Flower component that preserves infinite loop animation */
-const AnimatedPageFlower = memo(function AnimatedPageFlower({ src, style = {}, size = 95, rotation = 0, className = '' }) {
+const AnimatedPageFlower = memo(function AnimatedPageFlower({ src, style = {}, size = 95, rotation = 0, className = '', top, left, right, bottom }) {
   return (
     <div
       style={{
         position: 'absolute',
+        top, left, right, bottom,
         width: size,
         transform: `rotate(${rotation}deg)`,
         zIndex: 15,
@@ -139,7 +141,7 @@ const ScrapVideo = memo(function ScrapVideo({
   useEffect(() => {
     const v = videoRef.current
     if (!v) return
-    v.play().catch(() => {})
+    v.play().catch(() => { })
   }, [src])
 
   return (
@@ -212,206 +214,7 @@ const ScrapVideo = memo(function ScrapVideo({
   )
 })
 
-/* ═══════════════════════════════════════════════════════════
-   PAGE 5: MERGED DUAL-VIDEO CELESTIAL BACKGROUND
-   Seamless Synchronized Fusion of Golden Wave & Cosmic Spiral
-   Zero delay, lockstep preloading, 60fps compositing
-   ═══════════════════════════════════════════════════════════ */
-const MergedDualVideoBackground = memo(function MergedDualVideoBackground({ videoSrc1, videoSrc2 }) {
-  const vRef1 = useRef(null)
-  const vRef2 = useRef(null)
-  const containerRef = useRef(null)
-  const [mousePos, setMousePos] = useState({ x: 50, y: 50 })
-  const [isHovered, setIsHovered] = useState(false)
 
-  useEffect(() => {
-    const v1 = vRef1.current
-    const v2 = vRef2.current
-    if (!v1 || !v2) return
-
-    let isCancelled = false
-
-    const syncAndPlay = async () => {
-      try {
-        v1.currentTime = 0
-        v2.currentTime = 0
-        v1.muted = true
-        v2.muted = true
-        
-        // Trigger both videos in strict simultaneous lockstep
-        await Promise.all([
-          v1.play().catch(() => {}),
-          v2.play().catch(() => {})
-        ])
-      } catch (err) {
-        console.warn('Sync play exception:', err)
-      }
-    }
-
-    // Monitor for time drift and realign instantly (<35ms drift threshold)
-    const checkDrift = () => {
-      if (!v1 || !v2 || isCancelled) return
-      if (Math.abs(v1.currentTime - v2.currentTime) > 0.035) {
-        v2.currentTime = v1.currentTime
-      }
-    }
-
-    // Keep loop cycles in lockstep
-    const syncLoop = () => {
-      if (!v1 || !v2 || isCancelled) return
-      v1.currentTime = 0
-      v2.currentTime = 0
-      v1.play().catch(() => {})
-      v2.play().catch(() => {})
-    }
-
-    // Global interaction fallback to unlock autoplay if restricted
-    const handleGesture = () => {
-      if (v1 && v2 && (v1.paused || v2.paused)) {
-        v1.play().catch(() => {})
-        v2.play().catch(() => {})
-      }
-    }
-
-    v1.addEventListener('timeupdate', checkDrift)
-    v1.addEventListener('ended', syncLoop)
-    v2.addEventListener('ended', syncLoop)
-    window.addEventListener('pointerdown', handleGesture, { once: true })
-    window.addEventListener('touchstart', handleGesture, { once: true })
-
-    syncAndPlay()
-
-    return () => {
-      isCancelled = true
-      if (v1) {
-        v1.removeEventListener('timeupdate', checkDrift)
-        v1.removeEventListener('ended', syncLoop)
-      }
-      if (v2) {
-        v2.removeEventListener('ended', syncLoop)
-      }
-      window.removeEventListener('pointerdown', handleGesture)
-      window.removeEventListener('touchstart', handleGesture)
-    }
-  }, [videoSrc1, videoSrc2])
-
-  const handleMouseMove = (e) => {
-    if (!containerRef.current) return
-    const rect = containerRef.current.getBoundingClientRect()
-    const x = ((e.clientX - rect.left) / rect.width) * 100
-    const y = ((e.clientY - rect.top) / rect.height) * 100
-    setMousePos({ x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)) })
-  }
-
-  return (
-    <div
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{
-        position: 'absolute',
-        inset: 0,
-        width: '100%',
-        height: '100%',
-        overflow: 'hidden',
-        zIndex: 1,
-        pointerEvents: 'auto',
-      }}
-    >
-      {/* Base Layer: Cosmic Vortex Galaxy Video (Video 2) */}
-      <video
-        ref={vRef2}
-        src={videoSrc2}
-        muted
-        loop
-        playsInline
-        preload="auto"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          filter: 'brightness(0.95) contrast(1.15) saturate(1.1)',
-          zIndex: 1,
-          display: 'block',
-        }}
-      />
-
-      {/* Merged Overlay Layer: Golden Particle Waves Video (Video 1) */}
-      {/* Composited with mix-blend-mode: screen */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          zIndex: 2,
-          mixBlendMode: 'screen',
-          opacity: isHovered ? 0.96 : 0.88,
-          transition: 'opacity 0.4s ease',
-          pointerEvents: 'none',
-        }}
-      >
-        <video
-          ref={vRef1}
-          src={videoSrc1}
-          muted
-          loop
-          playsInline
-          preload="auto"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            filter: 'brightness(1.1) contrast(1.2) drop-shadow(0 0 16px rgba(255, 215, 0, 0.45))',
-            display: 'block',
-          }}
-        />
-      </div>
-
-      {/* Dynamic Interactive Fusion Lens / Starlight Highlight */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 3,
-          background: isHovered
-            ? `radial-gradient(circle 130px at ${mousePos.x}% ${mousePos.y}%, rgba(255, 223, 128, 0.3) 0%, rgba(255, 180, 50, 0.12) 40%, transparent 80%)`
-            : 'radial-gradient(ellipse 65% 55% at 50% 50%, rgba(255, 215, 0, 0.15) 0%, transparent 70%)',
-          transition: isHovered ? 'background 0.08s ease-out' : 'background 1.2s ease',
-          mixBlendMode: 'color-dodge',
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* Atmospheric Shimmering Depth Vignette */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 4,
-          background: 'linear-gradient(180deg, rgba(20, 15, 10, 0.42) 0%, rgba(10, 8, 6, 0.1) 40%, rgba(10, 8, 6, 0.1) 60%, rgba(20, 15, 10, 0.58) 100%)',
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* Soft feathered borders blending the video canvas into the sketchbook paper */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 5,
-          boxShadow: 'inset 0 0 35px rgba(245, 239, 227, 0.35), inset 0 0 15px rgba(0, 0, 0, 0.4)',
-          pointerEvents: 'none',
-        }}
-      />
-    </div>
-  )
-})
 
 /* Handwritten text style */
 const handStyle = {
@@ -447,10 +250,10 @@ const pageBase = (dir = 'left') => ({
 /* ═══════════════════════════════════════════════════════════
    SPREAD 1: "The Beginning" (Flowers 1 & 2)
    ═══════════════════════════════════════════════════════════ */
-function Spread1Left() {
+const Spread1Left = memo(function Spread1Left() {
   return (
     <div style={pageBase('left')} className="page-paper">
-      <div style={{ ...labelStyle, fontSize: 9, marginBottom: 6 }}>PAGE 01 — THE BEGINNING</div>
+      <div style={{ ...labelStyle, fontSize: 9, marginBottom: 6 }}>PAGE 01 / THE BEGINNING</div>
 
       {/* Main polaroid with washi tape */}
       <div style={{ position: 'absolute', top: 30, right: 18 }}>
@@ -477,16 +280,16 @@ function Spread1Left() {
         textAlign: 'center',
         zIndex: 10,
       }}>
-        You are the stars in my dark and cold nights — shining and unwavering.
+        You are the stars in my dark and cold nights, shining and unwavering.
       </div>
 
       {/* Bottom decorative line */}
       <DecorativeLine style={{ position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)' }} />
     </div>
   )
-}
+})
 
-function Spread1Right() {
+const Spread1Right = memo(function Spread1Right() {
   return (
     <div style={pageBase('right')} className="page-paper">
       <div style={{ ...labelStyle, fontSize: 9, textAlign: 'right', marginBottom: 6 }}>PAGE 02</div>
@@ -536,12 +339,12 @@ function Spread1Right() {
       />
     </div>
   )
-}
+})
 
 /* ═══════════════════════════════════════════════════════════
    SPREAD 2: "Precious Moments" (Page 3: Image Asset, Page 4: Video)
    ═══════════════════════════════════════════════════════════ */
-function Spread2Left() {
+const Spread2Left = memo(function Spread2Left() {
   return (
     <div style={pageBase('left')} className="page-paper">
       {/* Header Label */}
@@ -555,7 +358,7 @@ function Spread2Left() {
         justifyContent: 'space-between',
         alignItems: 'center',
       }}>
-        <span>PAGE 03 — PRECIOUS MOMENTS</span>
+        <span>PAGE 03 / PRECIOUS MOMENTS</span>
         <span style={{ fontSize: 8, opacity: 0.7, letterSpacing: '0.1em' }}>EDITION I</span>
       </div>
 
@@ -625,9 +428,9 @@ function Spread2Left() {
       <DecorativeLine style={{ position: 'absolute', bottom: 4, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }} />
     </div>
   )
-}
+})
 
-function Spread2Right() {
+const Spread2Right = memo(function Spread2Right() {
   return (
     <div style={pageBase('right')} className="page-paper">
       {/* Background Video for Page 4 */}
@@ -691,20 +494,14 @@ function Spread2Right() {
       <DecorativeLine style={{ position: 'absolute', bottom: 18, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }} />
     </div>
   )
-}
+})
 
 /* ═══════════════════════════════════════════════════════════
    SPREAD 3: "Golden Moments" (Page 5: Merged Dual-Video, Page 6: Chapters)
    ═══════════════════════════════════════════════════════════ */
-function Spread3Left() {
+const Spread3Left = memo(function Spread3Left() {
   return (
     <div style={pageBase('left')} className="page-paper">
-      {/* Full-bleed Merged Dual-Video Background */}
-      <MergedDualVideoBackground
-        videoSrc1={ASSETS.page5Video1}
-        videoSrc2={ASSETS.page5Video2}
-      />
-
       {/* Header Bar */}
       <div style={{
         position: 'relative',
@@ -712,99 +509,73 @@ function Spread3Left() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '2px 0 6px',
+        marginBottom: 6,
       }}>
         <div style={{
           ...labelStyle,
           fontSize: 9,
-          color: '#FFE699',
-          textShadow: '0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(255,215,0,0.6)',
         }}>
-          PAGE 05 — GOLDEN MOMENTS
+          PAGE 05 / GOLDEN MOMENTS
         </div>
         <div style={{
-          fontFamily: "'Cormorant Garamond', Georgia, serif",
+          ...labelStyle,
           fontSize: 8,
-          color: '#ffd700',
-          letterSpacing: '0.14em',
-          padding: '2px 8px',
-          borderRadius: 999,
-          background: 'rgba(20, 15, 10, 0.65)',
-          border: '1px solid rgba(255, 215, 0, 0.35)',
-          backdropFilter: 'blur(6px)',
-          WebkitBackdropFilter: 'blur(6px)',
-          textShadow: '0 1px 3px rgba(0,0,0,0.8)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 4,
+          opacity: 0.7,
+          letterSpacing: '0.1em',
         }}>
-          <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 6px #4ade80' }} />
-          SYNCHRONIZED FUSION
+          EDITION II
         </div>
       </div>
 
-      {/* Centerpiece Atmospheric Scrapbook Accent / Floating Golden Frame */}
+      {/* Centerpiece Scrapbook Photo with Washi Tape */}
       <div style={{
         position: 'absolute',
         top: '44%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
         zIndex: 8,
-        width: '84%',
-        height: '52%',
-        borderRadius: 8,
-        border: '1px solid rgba(255, 215, 0, 0.35)',
-        boxShadow: '0 12px 35px rgba(0, 0, 0, 0.45), inset 0 0 20px rgba(255, 215, 0, 0.1)',
-        backdropFilter: 'blur(1px)',
-        WebkitBackdropFilter: 'blur(1px)',
-        pointerEvents: 'none',
       }}>
-        <WashiTape top={-9} left="12%" color="rgba(197, 155, 39, 0.45)" rotation={-3} width={50} />
-        <WashiTape bottom={-9} right="12%" color="rgba(227, 163, 110, 0.45)" rotation={2} width={50} />
+        <ScrapPhoto
+          src={PHOTOS[4].src}
+          alt="Golden Moment"
+          width={120}
+          rotation={-2}
+          tapeColor="rgba(197, 155, 39, 0.4)"
+        />
       </div>
 
       {/* Animated Flower 5 GIF */}
       <AnimatedPageFlower
         src={ASSETS.flowers[4]}
-        bottom={10}
-        right={10}
+        top={12}
+        left={14}
         size={86}
-        rotation={15}
+        rotation={-8}
       />
 
-      {/* Romantic handwritten quote in frosted glass pill */}
+      {/* Handwritten quote */}
       <div style={{
         position: 'absolute',
-        bottom: 16,
+        bottom: 18,
         left: 14,
-        right: 80,
+        right: 14,
+        ...handStyle,
+        fontSize: 'clamp(14px, 2.8vw, 18px)',
+        textAlign: 'center',
         zIndex: 10,
-        padding: '6px 12px',
-        borderRadius: 8,
-        background: 'rgba(18, 14, 10, 0.62)',
-        border: '1px solid rgba(255, 215, 0, 0.25)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-        boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
       }}>
-        <div style={{
-          ...handStyle,
-          fontSize: 'clamp(13px, 2.7vw, 17px)',
-          color: '#FFF8E7',
-          textShadow: '0 1px 3px rgba(0,0,0,0.9), 0 0 10px rgba(255,215,0,0.4)',
-          lineHeight: 1.35,
-        }}>
-          "every moment spent with you is a memory I treasure forever."
-        </div>
+        "every moment spent with you is a memory I treasure forever."
       </div>
+
+      <DecorativeLine style={{ position: 'absolute', bottom: 6, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }} />
     </div>
   )
-}
+})
 
-function Spread3Right() {
+const Spread3Right = memo(function Spread3Right() {
   return (
     <div style={pageBase('right')} className="page-paper">
-      <div style={{ ...labelStyle, fontSize: 9, textAlign: 'right' }}>PAGE 06 — CHAPTERS</div>
+      <div style={{ ...labelStyle, fontSize: 9, textAlign: 'right' }}>PAGE 06 / CHAPTERS</div>
 
       <div style={{ position: 'absolute', top: 30, right: 16 }}>
         <ScrapPhoto src={PHOTOS[8].src} alt="Photo" width={105} rotation={4} tapeColor="rgba(197, 155, 39, 0.3)" />
@@ -836,12 +607,12 @@ function Spread3Right() {
       </div>
     </div>
   )
-}
+})
 
 /* ═══════════════════════════════════════════════════════════
    SPREAD 4: "Celebration & The End"
    ═══════════════════════════════════════════════════════════ */
-function Spread4Left() {
+const Spread4Left = memo(function Spread4Left() {
   return (
     <div style={{
       ...pageBase('left'),
@@ -860,7 +631,7 @@ function Spread4Left() {
         fontWeight: 400,
         fontStyle: 'italic',
       }}>
-        Happy Birthday ✨
+        Happy Birthday
       </div>
 
       <ScrapPhoto src={PHOTOS[10].src} alt="Photo" width={128} rotation={-2} tapeColor="rgba(197, 155, 39, 0.35)" />
@@ -881,125 +652,535 @@ function Spread4Left() {
         marginBottom: 10,
         zIndex: 10,
       }}>
-        May your year be filled with endless joy, magic, and boundless love 💖
+        May your year be filled with endless joy, magic, and boundless love
       </div>
     </div>
   )
-}
+})
 
-function Spread4Right() {
+/* ═══════════════════════════════════════════════════════════
+   SPREAD 4 RIGHT (PAGE 08 · THE FINALE · ASPECT TEST GALLERY)
+   Design inspired by Pinterest UI Animation reference (https://pin.it/38FCPdTf9):
+   - Camera HUD Viewfinder (Corner brackets ┌ ┐ └ ┘, side crosshairs ├ ┤)
+   - Top Header: "ALL PURPOSE" with interactive Play/Pause toggle ▷
+   - Multi-Card Dynamic Cluster / Shuffle Collage (8 photo & video memory cards)
+   - Reactive Segmented Equalizer Progress Bar [❚❚❚❚❚❚❚❚❚❚] & "ASPECT TEST"
+   - Interactive 3D Perspective Tilt & Click-to-Focus
+   ═══════════════════════════════════════════════════════════ */
+
+const CLUSTER_ITEMS = [
+  { id: 1, type: 'video', src: ASSETS.page5Video2, title: 'Forever & Always', tag: '01 / MEMORY' },
+  { id: 2, type: 'photo', src: PHOTOS[0].src, title: 'Sweet Smile', tag: '02 / BEAUTY' },
+  { id: 3, type: 'photo', src: PHOTOS[1].src, title: 'My Love', tag: '03 / ROMANCE' },
+  { id: 4, type: 'photo', src: PHOTOS[2].src, title: 'Pure Joy', tag: '04 / RADIANCE' },
+  { id: 5, type: 'photo', src: PHOTOS[4].src, title: 'Golden Hour', tag: '05 / PRECIOUS' },
+  { id: 6, type: 'photo', src: PHOTOS[6].src, title: 'Angel Eyes', tag: '06 / WONDER' },
+  { id: 7, type: 'photo', src: PHOTOS[8].src, title: 'Dream Girl', tag: '07 / ETERNAL' },
+  { id: 8, type: 'photo', src: PHOTOS[10].src, title: 'Happy Birthday', tag: '08 / FINALE' },
+]
+
+const CLUSTER_SLOTS = [
+  // Slot 0: Center Focal Card (Front & Center)
+  { x: 0, y: 0, scale: 1.05, zIndex: 30, opacity: 1, rotate: 0 },
+  // Slot 1: Top Center / Back
+  { x: -14, y: -58, scale: 0.80, zIndex: 12, opacity: 0.82, rotate: -2 },
+  // Slot 2: Top Right
+  { x: 58, y: -38, scale: 0.82, zIndex: 16, opacity: 0.88, rotate: 3 },
+  // Slot 3: Right
+  { x: 74, y: 12, scale: 0.80, zIndex: 14, opacity: 0.85, rotate: -1 },
+  // Slot 4: Bottom Right
+  { x: 48, y: 58, scale: 0.82, zIndex: 18, opacity: 0.88, rotate: 2 },
+  // Slot 5: Bottom Center
+  { x: -14, y: 68, scale: 0.76, zIndex: 11, opacity: 0.80, rotate: -3 },
+  // Slot 6: Bottom Left
+  { x: -58, y: 42, scale: 0.82, zIndex: 17, opacity: 0.88, rotate: 1 },
+  // Slot 7: Left
+  { x: -72, y: -8, scale: 0.80, zIndex: 13, opacity: 0.85, rotate: -2 },
+]
+
+const Spread4Right = memo(function Spread4Right({ onPhotoClick }) {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(true)
+  const [isHovered, setIsHovered] = useState(false)
+  const [mouseTilt, setMouseTilt] = useState({ rx: 0, ry: 0 })
+  const activeVideoRef = useRef(null)
+
+  // Auto-cycle through the cluster items every 3.2s
+  useEffect(() => {
+    if (!isPlaying || isHovered) return
+    const timer = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % CLUSTER_ITEMS.length)
+    }, 3200)
+    return () => clearInterval(timer)
+  }, [isPlaying, isHovered])
+
+  // Play video if active card is video
+  useEffect(() => {
+    const cur = CLUSTER_ITEMS[activeIndex]
+    if (cur.type === 'video' && activeVideoRef.current) {
+      activeVideoRef.current.play().catch(() => { })
+    }
+  }, [activeIndex])
+
+  const handleMouseMove = useCallback((e) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = (e.clientX - rect.left) / rect.width - 0.5
+    const y = (e.clientY - rect.top) / rect.height - 0.5
+    setMouseTilt({ rx: -y * 12, ry: x * 14 })
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false)
+    setMouseTilt({ rx: 0, ry: 0 })
+  }, [])
+
   return (
     <div
       style={{
-        ...pageBase('right'),
+        height: '100%',
+        width: '100%',
+        position: 'relative',
+        background: '#07080b',
+        backgroundImage: `
+          radial-gradient(ellipse at 50% 48%, #141724 0%, #06070a 100%),
+          linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px)
+        `,
+        backgroundSize: '100% 100%, 24px 24px, 24px 24px',
+        overflow: 'hidden',
+        boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '14px 14px 12px',
-        boxSizing: 'border-box',
+        alignItems: 'center',
+        padding: '12px 14px 10px',
+        userSelect: 'none',
       }}
       className="page-paper"
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={handleMouseLeave}
     >
-      {/* Top Header Label */}
-      <div style={{
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingBottom: 2,
-        zIndex: 10,
-      }}>
-        <span style={{ ...labelStyle, fontSize: 8.5, letterSpacing: '0.18em' }}>
-          PAGE 08 · THE FINALE
-        </span>
-        <span style={{
-          ...labelStyle,
-          fontSize: 8.5,
-          fontWeight: 700,
-          color: '#c59b27',
-          letterSpacing: '0.22em',
-        }}>
-          THE END
-        </span>
-      </div>
-
-      {/* Decorative animated flower accent */}
-      <AnimatedPageFlower
-        src={ASSETS.flowers[1]}
-        top={8}
-        right={10}
-        size={68}
-        rotation={18}
-      />
-
-      {/* Featured Video Card */}
-      <div style={{ position: 'relative', margin: '4px 0', zIndex: 8 }}>
-        <ScrapVideo
-          src={ASSETS.page5Video2}
-          width={154}
-          rotation={2}
-          tapeColor="rgba(197, 155, 39, 0.45)"
-          caption="forever & always ✨"
-        />
-      </div>
-
-      {/* Heartfelt Poetic Text */}
+      {/* ── CAMERA HUD VIEWPORT CORNER BRACKETS ── */}
+      {/* Top Left Bracket ┌ */}
       <div
         style={{
-          ...handStyle,
-          fontSize: 'clamp(13px, 2.5vw, 16px)',
+          position: 'absolute',
+          top: 10,
+          left: 10,
+          width: 13,
+          height: 13,
+          borderTop: '1.5px solid rgba(255, 255, 255, 0.75)',
+          borderLeft: '1.5px solid rgba(255, 255, 255, 0.75)',
+          pointerEvents: 'none',
+          zIndex: 40,
+        }}
+      />
+      {/* Top Right Bracket ┐ */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 10,
+          right: 10,
+          width: 13,
+          height: 13,
+          borderTop: '1.5px solid rgba(255, 255, 255, 0.75)',
+          borderRight: '1.5px solid rgba(255, 255, 255, 0.75)',
+          pointerEvents: 'none',
+          zIndex: 40,
+        }}
+      />
+      {/* Bottom Left Bracket └ */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 10,
+          left: 10,
+          width: 13,
+          height: 13,
+          borderBottom: '1.5px solid rgba(255, 255, 255, 0.75)',
+          borderLeft: '1.5px solid rgba(255, 255, 255, 0.75)',
+          pointerEvents: 'none',
+          zIndex: 40,
+        }}
+      />
+      {/* Bottom Right Bracket ┘ */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 10,
+          right: 10,
+          width: 13,
+          height: 13,
+          borderBottom: '1.5px solid rgba(255, 255, 255, 0.75)',
+          borderRight: '1.5px solid rgba(255, 255, 255, 0.75)',
+          pointerEvents: 'none',
+          zIndex: 40,
+        }}
+      />
+
+      {/* ── SIDE ALIGNMENT CROSSHAIRS ── */}
+      {/* Left Tick ├ */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 6,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: 8,
+          height: 1.5,
+          background: 'rgba(255, 255, 255, 0.45)',
+          pointerEvents: 'none',
+          zIndex: 40,
+        }}
+      />
+      {/* Right Tick ┤ */}
+      <div
+        style={{
+          position: 'absolute',
+          right: 6,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: 8,
+          height: 1.5,
+          background: 'rgba(255, 255, 255, 0.45)',
+          pointerEvents: 'none',
+          zIndex: 40,
+        }}
+      />
+
+      {/* ── TOP HUD HEADER BAR ── */}
+      <div
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '2px 8px 0',
+          zIndex: 40,
+          position: 'relative',
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "'Space Mono', monospace",
+            fontSize: '9px',
+            letterSpacing: '0.22em',
+            color: '#ffffff',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            textShadow: '0 0 10px rgba(255,255,255,0.4)',
+          }}
+        >
+          <span style={{ color: '#ffd700', fontSize: 10 }}>·</span>
+          <span>ALL PURPOSE</span>
+        </div>
+
+        {/* Play/Pause Button (Matching the open triangle ▷ from reference) */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            setIsPlaying((prev) => !prev)
+          }}
+          title={isPlaying ? 'Pause Auto-Shuffle' : 'Play Auto-Shuffle'}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#ffffff',
+            opacity: isPlaying ? 0.95 : 0.45,
+            transition: 'opacity 0.2s ease, transform 0.2s ease',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.2)')}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+        >
+          {isPlaying ? (
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="#ffffff">
+              <polygon points="6 3 20 12 6 21 6 3" />
+            </svg>
+          ) : (
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="6 3 20 12 6 21 6 3" />
+            </svg>
+          )}
+        </button>
+      </div>
+
+      {/* ── CENTER PICTURE SECTION: DYNAMIC MULTI-CARD CLUSTER ── */}
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '240px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          perspective: 1000,
+          transformStyle: 'preserve-3d',
+          zIndex: 20,
+          margin: 'auto 0',
+        }}
+      >
+        <motion.div
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transformStyle: 'preserve-3d',
+          }}
+          animate={{
+            rotateX: mouseTilt.rx,
+            rotateY: mouseTilt.ry,
+          }}
+          transition={{ type: 'spring', stiffness: 180, damping: 20 }}
+        >
+          {CLUSTER_ITEMS.map((item, index) => {
+            // Compute slot based on active index
+            const slotIndex = (index - activeIndex + CLUSTER_ITEMS.length) % CLUSTER_ITEMS.length
+            const slot = CLUSTER_SLOTS[slotIndex] || CLUSTER_SLOTS[0]
+            const isFocal = slotIndex === 0
+
+            return (
+              <motion.div
+                key={item.id}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (!isFocal) {
+                    setActiveIndex(index)
+                  } else {
+                    onPhotoClick?.(item)
+                  }
+                }}
+                animate={{
+                  x: slot.x,
+                  y: slot.y,
+                  scale: slot.scale,
+                  zIndex: slot.zIndex,
+                  opacity: slot.opacity,
+                  rotate: slot.rotate,
+                }}
+                whileHover={
+                  !isFocal
+                    ? { scale: slot.scale * 1.08, filter: 'brightness(1.1)' }
+                    : { scale: slot.scale * 1.03 }
+                }
+                transition={{
+                  type: 'spring',
+                  stiffness: 280,
+                  damping: 26,
+                  mass: 0.85,
+                }}
+                style={{
+                  position: 'absolute',
+                  width: isFocal ? '112px' : '88px',
+                  height: isFocal ? '146px' : '116px',
+                  borderRadius: 14,
+                  overflow: 'hidden',
+                  cursor: isFocal ? 'zoom-in' : 'pointer',
+                  border: isFocal
+                    ? '1.5px solid rgba(255, 215, 0, 0.9)'
+                    : '1px solid rgba(255, 255, 255, 0.22)',
+                  boxShadow: isFocal
+                    ? '0 16px 38px rgba(0, 0, 0, 0.85), 0 0 22px rgba(255, 215, 0, 0.35)'
+                    : '0 8px 24px rgba(0, 0, 0, 0.65)',
+                  background: '#0e111a',
+                  willChange: 'transform, opacity',
+                  transition: 'border 0.3s ease, box-shadow 0.3s ease',
+                }}
+                title={isFocal ? 'Click to open full photo' : `Focus on ${item.title}`}
+              >
+                {/* Media Image or Video */}
+                {item.type === 'video' ? (
+                  <video
+                    ref={isFocal ? activeVideoRef : null}
+                    src={item.src}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      display: 'block',
+                      filter: isFocal ? 'contrast(1.05)' : 'brightness(0.9) contrast(1)',
+                    }}
+                  />
+                ) : (
+                  <img
+                    src={item.src}
+                    alt={item.title}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      display: 'block',
+                      filter: isFocal ? 'contrast(1.05)' : 'brightness(0.9) contrast(1)',
+                    }}
+                    loading="eager"
+                    draggable={false}
+                  />
+                )}
+
+                {/* Subtle Glass Reflection Sheen */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: isFocal
+                      ? 'linear-gradient(135deg, rgba(255,255,255,0.22) 0%, transparent 55%)'
+                      : 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 50%)',
+                    pointerEvents: 'none',
+                  }}
+                />
+
+                {/* Focal Card Pill Badge */}
+                {isFocal && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: 6,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      padding: '3px 8px',
+                      borderRadius: 999,
+                      background: 'rgba(7, 8, 12, 0.85)',
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      border: '1px solid rgba(255, 215, 0, 0.45)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      whiteSpace: 'nowrap',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    <span style={{ color: '#ffd700', fontSize: 8 }}>·</span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: 8.5,
+                        fontWeight: 600,
+                        color: '#f8f4eb',
+                        letterSpacing: '0.04em',
+                      }}
+                    >
+                      {item.title}
+                    </span>
+                  </div>
+                )}
+              </motion.div>
+            )
+          })}
+        </motion.div>
+      </div>
+
+      {/* ── SENTIMENTAL BIRTHDAY DEDICATION ── */}
+      <div
+        style={{
+          fontFamily: "'Alex Brush', cursive",
+          fontSize: 'clamp(13px, 2.4vw, 15px)',
+          color: 'rgba(255, 235, 195, 0.88)',
           textAlign: 'center',
-          maxWidth: 230,
-          zIndex: 10,
-          lineHeight: 1.35,
-          color: '#573d21',
-          textShadow: '0 1px 2px rgba(255,255,255,0.8)',
-          margin: '2px 0',
+          maxWidth: 240,
+          zIndex: 35,
+          lineHeight: 1.25,
+          textShadow: '0 2px 6px rgba(0,0,0,0.9)',
+          pointerEvents: 'none',
+          margin: '2px 0 4px',
         }}
       >
         "Thank you for making every day brighter. To many more chapters together."
       </div>
 
-      <DecorativeLine style={{ margin: '0 auto', opacity: 0.6 }} />
-
-      {/* Footer Bar on Last Page */}
+      {/* ── BOTTOM HUD FOOTER BAR ── */}
       <div
         style={{
-          ...labelStyle,
-          fontSize: 8.5,
-          padding: '5px 16px',
-          borderTop: '1px solid rgba(169, 116, 79, 0.22)',
-          borderBottom: '1px solid rgba(169, 116, 79, 0.22)',
+          width: '100%',
           display: 'flex',
           alignItems: 'center',
-          gap: 6,
-          letterSpacing: '0.2em',
-          color: '#7c664d',
-          zIndex: 10,
+          justifyContent: 'space-between',
+          padding: '0 8px 2px',
+          zIndex: 40,
+          position: 'relative',
         }}
       >
-        <span>WITH LOVE, ALWAYS</span>
-        <span style={{ color: '#e11d48', fontSize: 10 }}>❤️</span>
+        {/* Equalizer Step Bar (Matching the segmented block meter from reference) */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            padding: '2px 4px',
+            border: '1px solid rgba(255, 255, 255, 0.45)',
+            borderRadius: 2,
+            background: 'rgba(0, 0, 0, 0.65)',
+          }}
+          title={`Moment ${activeIndex + 1} of ${CLUSTER_ITEMS.length}`}
+        >
+          {Array.from({ length: 12 }).map((_, i) => {
+            const activeSegments = Math.round(((activeIndex + 1) / CLUSTER_ITEMS.length) * 12)
+            const isActive = i < activeSegments
+            return (
+              <div
+                key={i}
+                style={{
+                  width: 3,
+                  height: 8,
+                  borderRadius: 0.5,
+                  background: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.16)',
+                  boxShadow: isActive ? '0 0 4px rgba(255,255,255,0.7)' : 'none',
+                  transition: 'background 0.25s ease, box-shadow 0.25s ease',
+                }}
+              />
+            )
+          })}
+        </div>
+
+        {/* Monospace Aspect Test Title */}
+        <div
+          style={{
+            fontFamily: "'Space Mono', monospace",
+            fontSize: '9px',
+            letterSpacing: '0.22em',
+            color: '#ffffff',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            textShadow: '0 0 10px rgba(255,255,255,0.4)',
+          }}
+        >
+          ASPECT TEST
+        </div>
       </div>
     </div>
   )
-}
+})
 
 /* ═══════════════════════════════════════════════════════════
    SPREADS LIST
    ═══════════════════════════════════════════════════════════ */
 const SPREADS = [
-  { left: <Spread1Left />, right: <Spread1Right /> },
-  { left: <Spread2Left />, right: <Spread2Right /> },
-  { left: <Spread3Left />, right: <Spread3Right /> },
-  { left: <Spread4Left />, right: <Spread4Right /> },
+  { Left: Spread1Left, Right: Spread1Right },
+  { Left: Spread2Left, Right: Spread2Right },
+  { Left: Spread3Left, Right: Spread3Right },
+  { Left: Spread4Left, Right: Spread4Right },
 ]
 
 /* ═══════════════════════════════════════════════════════════
    SPIRAL BINDING
    ═══════════════════════════════════════════════════════════ */
-function CenterBinding() {
+const CenterBinding = memo(function CenterBinding() {
   const count = 14
   return (
     <div style={{
@@ -1028,22 +1209,24 @@ function CenterBinding() {
       ))}
     </div>
   )
-}
+})
 
 /* ═══════════════════════════════════════════════════════════
    FRONT COVER — Continuous Animated Cover GIF
    ═══════════════════════════════════════════════════════════ */
-function FrontCover({ onOpen }) {
+const FrontCover = memo(function FrontCover({ onOpen }) {
   return (
     <motion.div
       key="cover"
       onClick={onOpen}
-      initial={{ rotateY: 0, opacity: 1 }}
-      animate={{ rotateY: 0, opacity: 1 }}
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
       exit={{
-        rotateY: -170,
-        transition: { duration: 0.75, ease: [0.45, 0, 0.2, 1] },
+        opacity: 0,
+        scale: 1.03,
+        transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] },
       }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
       whileHover={{
         scale: 1.02,
         boxShadow: '0 30px 80px rgba(0, 0, 0, 0.85), 0 0 35px rgba(255, 215, 0, 0.3)',
@@ -1051,8 +1234,6 @@ function FrontCover({ onOpen }) {
       style={{
         position: 'absolute',
         inset: 0,
-        transformOrigin: 'left center',
-        transformStyle: 'preserve-3d',
         cursor: 'pointer',
         border: '1px solid rgba(255, 215, 0, 0.4)',
         padding: 0,
@@ -1060,6 +1241,7 @@ function FrontCover({ onOpen }) {
         boxShadow: '0 25px 70px rgba(0,0,0,0.8), 0 0 25px rgba(255, 215, 0, 0.2)',
         overflow: 'hidden',
         background: '#0a0a0e',
+        willChange: 'transform, opacity',
       }}
     >
       <img
@@ -1119,25 +1301,29 @@ function FrontCover({ onOpen }) {
           color: '#FFE699',
           textShadow: '0 1px 4px rgba(0,0,0,0.8)',
         }}>
-          Click to Open 📖
+          Click to Open
         </span>
       </div>
     </motion.div>
   )
-}
+})
 
 /* ═══════════════════════════════════════════════════════════
    BACK COVER — Continuous Animated Back Page GIF
    ═══════════════════════════════════════════════════════════ */
-function BackCoverView({ onClose }) {
+const BackCoverView = memo(function BackCoverView({ onClose }) {
   return (
     <motion.div
       key="back-cover"
       onClick={onClose}
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.96 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      exit={{
+        opacity: 0,
+        scale: 1.03,
+        transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] },
+      }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
       whileHover={{
         scale: 1.02,
         boxShadow: '0 30px 80px rgba(0, 0, 0, 0.85), 0 0 35px rgba(255, 215, 0, 0.3)',
@@ -1151,6 +1337,7 @@ function BackCoverView({ onClose }) {
         cursor: 'pointer',
         background: '#0a0a0e',
         border: '1px solid rgba(255, 215, 0, 0.4)',
+        willChange: 'transform, opacity',
       }}
     >
       <img
@@ -1199,26 +1386,26 @@ function BackCoverView({ onClose }) {
           color: '#FFE699',
           textShadow: '0 1px 4px rgba(0,0,0,0.8)',
         }}>
-          Click to Re-open ↺
+          Click to Re-open
         </span>
       </div>
     </motion.div>
   )
-}
+})
 
 /* ═══════════════════════════════════════════════════════════
    CORNER CURL HOVER HINT
    ═══════════════════════════════════════════════════════════ */
-function PageCornerHint({ dir = 'right', onClick }) {
+const PageCornerHint = memo(function PageCornerHint({ dir = 'right', onClick, disabled = false }) {
   const isRight = dir === 'right'
   return (
     <motion.div
       onClick={(e) => {
         e.stopPropagation()
-        onClick()
+        if (!disabled) onClick()
       }}
-      whileHover={{ scale: 1.15 }}
-      whileTap={{ scale: 0.95 }}
+      whileHover={disabled ? {} : { scale: 1.15 }}
+      whileTap={disabled ? {} : { scale: 0.95 }}
       title={isRight ? 'Turn page forward' : 'Turn page backward'}
       style={{
         position: 'absolute',
@@ -1226,8 +1413,8 @@ function PageCornerHint({ dir = 'right', onClick }) {
         [isRight ? 'right' : 'left']: 0,
         width: 44,
         height: 44,
-        cursor: 'pointer',
-        zIndex: 35,
+        cursor: disabled ? 'default' : 'pointer',
+        zIndex: 50,
         pointerEvents: 'auto',
       }}
     >
@@ -1264,90 +1451,140 @@ function PageCornerHint({ dir = 'right', onClick }) {
       </div>
     </motion.div>
   )
-}
+})
 
-function BackCoverInside() {
-  return (
-    <div style={pageBase('left')} className="page-paper">
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100%',
-        gap: 12,
-      }}>
-        <div style={{ ...labelStyle, fontSize: 10 }}>MEMORIES PRESERVED</div>
-        <div style={{ ...handStyle, fontSize: 18, textAlign: 'center' }}>
-          "Forever etched in our stars..."
-        </div>
-      </div>
-    </div>
-  )
+/* ═══════════════════════════════════════════════════════════
+   PAGE SPREAD VARIANTS (Fluid, GPU-accelerated transform: translateX & opacity)
+   ═══════════════════════════════════════════════════════════ */
+const spreadVariants = {
+  enter: (dir) => ({
+    x: dir > 0 ? '18%' : '-18%',
+    opacity: 0,
+    scale: 0.985,
+    filter: 'brightness(0.96)',
+  }),
+  center: {
+    x: '0%',
+    opacity: 1,
+    scale: 1,
+    filter: 'brightness(1)',
+    transition: {
+      x: { duration: 0.32, ease: [0.22, 1, 0.36, 1] },
+      opacity: { duration: 0.28, ease: 'easeOut' },
+      scale: { duration: 0.32, ease: [0.22, 1, 0.36, 1] },
+      filter: { duration: 0.32, ease: 'easeOut' },
+    },
+  },
+  exit: (dir) => ({
+    x: dir > 0 ? '-18%' : '18%',
+    opacity: 0,
+    scale: 0.985,
+    filter: 'brightness(0.94)',
+    transition: {
+      x: { duration: 0.28, ease: [0.22, 1, 0.36, 1] },
+      opacity: { duration: 0.24, ease: 'easeIn' },
+      scale: { duration: 0.28, ease: [0.22, 1, 0.36, 1] },
+      filter: { duration: 0.28, ease: 'easeIn' },
+    },
+  }),
 }
 
 /* ═══════════════════════════════════════════════════════════
    MAIN SKETCHBOOK COMPONENT
-   Realistic Dual-Sided 3D Page Turning Engine
+   Fluid, GPU-Accelerated Natural Page-Turn Engine
    ═══════════════════════════════════════════════════════════ */
-function Sketchbook() {
+function Sketchbook({ onPhotoClick }) {
   const [open, setOpen] = useState(false)
   const [index, setIndex] = useState(0)
-  const [flip, setFlip] = useState(null)
+  const [direction, setDirection] = useState(1)
   const [showBackCover, setShowBackCover] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
+  const isAnimatingRef = useRef(false)
+  const lastActionTimeRef = useRef(0)
   const touchStartX = useRef(0)
 
   const total = SPREADS.length
-  const FLIP_MS = 900 // 900ms smooth tactile physical paper turn
 
+  const setTransitioning = useCallback((value) => {
+    isAnimatingRef.current = value
+    setIsAnimating(value)
+  }, [])
+
+  /* Throttled forward navigation */
   const goNext = useCallback(() => {
-    if (flip) return
+    const now = performance.now()
+    if (isAnimatingRef.current || now - lastActionTimeRef.current < 340) return
+
     if (index >= total - 1) {
-      setFlip({ dir: 'next', from: index, to: index, closing: true })
+      lastActionTimeRef.current = now
+      setTransitioning(true)
+      setOpen(false)
+      setShowBackCover(true)
+      setTimeout(() => {
+        setTransitioning(false)
+      }, 350)
       return
     }
-    setFlip({ dir: 'next', from: index, to: index + 1 })
-  }, [flip, index, total])
 
+    lastActionTimeRef.current = now
+    setTransitioning(true)
+    setDirection(1)
+    setIndex((prev) => prev + 1)
+  }, [index, total, setTransitioning])
+
+  /* Throttled backward navigation */
   const goPrev = useCallback(() => {
-    if (flip) return
+    const now = performance.now()
+    if (isAnimatingRef.current || now - lastActionTimeRef.current < 340) return
+
     if (index <= 0) {
+      lastActionTimeRef.current = now
+      setTransitioning(true)
       setOpen(false)
       setShowBackCover(false)
+      setTimeout(() => {
+        setTransitioning(false)
+      }, 350)
       return
     }
-    setFlip({ dir: 'prev', from: index, to: index - 1 })
-  }, [flip, index])
+
+    lastActionTimeRef.current = now
+    setTransitioning(true)
+    setDirection(-1)
+    setIndex((prev) => prev - 1)
+  }, [index, setTransitioning])
 
   const closeBook = useCallback(() => {
-    if (flip) return
+    if (isAnimatingRef.current) return
+    setTransitioning(true)
     setOpen(false)
     setShowBackCover(false)
     setIndex(0)
-  }, [flip])
+    setTimeout(() => {
+      setTransitioning(false)
+    }, 350)
+  }, [setTransitioning])
 
+  /* Keyboard controls with preventDefault to avoid page scroll jump */
   useEffect(() => {
     const onKey = (e) => {
       if (!open) return
-      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') goNext()
-      if (e.key === 'ArrowLeft' || e.key === 'PageUp') goPrev()
-      if (e.key === 'Escape') closeBook()
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault()
+        goNext()
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault()
+        goPrev()
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        closeBook()
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [open, goNext, goPrev, closeBook])
-
-  const handleFlipComplete = () => {
-    if (!flip) return
-    if (flip.closing) {
-      setOpen(false)
-      setShowBackCover(true)
-      setIndex(0)
-    } else {
-      setIndex(flip.to)
-    }
-    setFlip(null)
-  }
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX
@@ -1359,23 +1596,16 @@ function Sketchbook() {
     else if (diff > 45) goPrev()
   }
 
+  const handleAnimationComplete = useCallback(() => {
+    setTransitioning(false)
+  }, [setTransitioning])
+
+  const CurrentLeft = SPREADS[index]?.Left
+  const CurrentRight = SPREADS[index]?.Right
+
   return (
     <section className="sketchbook-section relative" id="sketchbook-section">
-      {/* Top seamless blend fade */}
-      <div
-        className="absolute top-0 left-0 right-0 h-44 pointer-events-none z-10"
-        style={{
-          background: 'linear-gradient(to bottom, #060c1b 0%, rgba(6, 12, 27, 0.7) 45%, transparent 100%)',
-        }}
-      />
 
-      {/* Bottom seamless blend fade */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-44 pointer-events-none z-10"
-        style={{
-          background: 'linear-gradient(to top, #060c1b 0%, rgba(6, 12, 27, 0.7) 45%, transparent 100%)',
-        }}
-      />
 
       {/* Section Title */}
       <motion.div
@@ -1386,17 +1616,6 @@ function Sketchbook() {
         viewport={{ once: true }}
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
       >
-        <p style={{
-          fontFamily: 'var(--font-sans)',
-          fontSize: '11px',
-          fontWeight: 500,
-          letterSpacing: '0.2em',
-          textTransform: 'uppercase',
-          color: 'rgba(197, 155, 39, 0.6)',
-          marginBottom: 10,
-        }}>
-          Chapter Three
-        </p>
         <h2 style={{
           fontFamily: 'var(--font-serif)',
           fontSize: 'clamp(28px, 4vw, 48px)',
@@ -1419,301 +1638,133 @@ function Sketchbook() {
         </p>
       </motion.div>
 
-      {/* Book Container */}
+      {/* Book Container with stable dimensions & GPU compositing */}
       <div style={{
-        perspective: 2600,
         width: 'min(92vw, 760px)',
         aspectRatio: '16 / 10',
         position: 'relative',
+        transform: 'translateZ(0)',
       }}>
-        <AnimatePresence mode="wait" initial={false}>
+        <AnimatePresence mode="sync" initial={false}>
           {!open ? (
             showBackCover ? (
-              <BackCoverView onClose={() => {
-                setShowBackCover(false)
-                setOpen(true)
-                setIndex(0)
-              }} />
+              <BackCoverView
+                key="back-cover-view"
+                onClose={() => {
+                  setShowBackCover(false)
+                  setOpen(true)
+                  setIndex(0)
+                  setDirection(1)
+                }}
+              />
             ) : (
-              <FrontCover onOpen={() => {
-                setOpen(true)
-                setShowBackCover(false)
-              }} />
+              <FrontCover
+                key="front-cover-view"
+                onOpen={() => {
+                  setOpen(true)
+                  setShowBackCover(false)
+                  setIndex(0)
+                  setDirection(1)
+                }}
+              />
             )
           ) : (
-            /* ── OPEN BOOK WITH 3D DOUBLE-SIDED REALISTIC TURNING ── */
+            /* ── OPEN BOOK WITH SMOOTH FLUID SPREAD TRANSITIONS ── */
             <motion.div
-              key="open"
-              initial={{ opacity: 0, scale: 0.97 }}
+              key="open-book"
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
               style={{
                 position: 'absolute',
                 inset: 0,
-                display: 'flex',
                 borderRadius: 6,
                 overflow: 'hidden',
                 boxShadow: '0 32px 85px rgba(0,0,0,0.75), 0 0 35px rgba(255, 215, 0, 0.15)',
                 background: '#f5efe3',
-                perspective: 2600,
-                transformStyle: 'preserve-3d',
+                willChange: 'transform, opacity',
               }}
             >
+              {/* Animated Spreads using transform: translateX and opacity */}
+              <AnimatePresence custom={direction} mode="popLayout" initial={false}>
+                <motion.div
+                  key={index}
+                  custom={direction}
+                  variants={spreadVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  onAnimationComplete={handleAnimationComplete}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    width: '100%',
+                    height: '100%',
+                    willChange: 'transform, opacity',
+                  }}
+                >
+                  {/* Left Half (50%) */}
+                  <div
+                    onClick={index > 0 && !isAnimating ? goPrev : undefined}
+                    style={{
+                      position: 'relative',
+                      width: '50%',
+                      height: '100%',
+                      cursor: index > 0 && !isAnimating ? 'pointer' : 'default',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {CurrentLeft && <CurrentLeft />}
+
+                    {/* Page spine shadow */}
+                    <div
+                      className="page-curl-shadow"
+                      style={{
+                        left: 0,
+                        right: 'auto',
+                        background: 'linear-gradient(270deg, transparent 60%, rgba(0,0,0,0.08) 100%)',
+                        pointerEvents: 'none',
+                      }}
+                    />
+                  </div>
+
+                  {/* Right Half (50%) */}
+                  <div
+                    onClick={!isAnimating ? goNext : undefined}
+                    style={{
+                      position: 'relative',
+                      width: '50%',
+                      height: '100%',
+                      cursor: !isAnimating ? 'pointer' : 'default',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {CurrentRight && <CurrentRight onPhotoClick={onPhotoClick} />}
+
+                    {/* Page spine shadow */}
+                    <div
+                      className="page-curl-shadow"
+                      style={{
+                        background: 'linear-gradient(90deg, transparent 60%, rgba(0,0,0,0.08) 100%)',
+                        pointerEvents: 'none',
+                      }}
+                    />
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Center Spiral Binding (Always stays anchored in center) */}
               <CenterBinding />
 
-              {/* ── LEFT HALF ── */}
-              <div
-                onClick={() => !flip && index > 0 && goPrev()}
-                style={{
-                  position: 'relative',
-                  width: '50%',
-                  height: '100%',
-                  cursor: index > 0 && !flip ? 'pointer' : 'default',
-                  overflow: 'hidden',
-                }}
-              >
-                {/* Base Left Page (Underneath) */}
-                {flip?.dir === 'prev' ? (
-                  SPREADS[flip.to]?.left
-                ) : (
-                  SPREADS[index]?.left
-                )}
-
-                {/* Page spine shadow */}
-                <div
-                  className="page-curl-shadow"
-                  style={{
-                    left: 0,
-                    right: 'auto',
-                    background: 'linear-gradient(270deg, transparent 60%, rgba(0,0,0,0.08) 100%)',
-                    pointerEvents: 'none',
-                  }}
-                />
-
-                {/* Ambient dynamic shadow on Left Page during NEXT flip */}
-                {flip?.dir === 'next' && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: [0, 0.35, 0] }}
-                    transition={{ duration: FLIP_MS / 1000, ease: [0.25, 0.1, 0.25, 1] }}
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      background: 'linear-gradient(90deg, rgba(0,0,0,0.42) 0%, transparent 65%)',
-                      pointerEvents: 'none',
-                      zIndex: 25,
-                    }}
-                  />
-                )}
-
-                {/* TURNING LEAF FOR PREV FLIP (Rotates 0deg -> 180deg from right edge) */}
-                {flip?.dir === 'prev' && (
-                  <motion.div
-                    initial={{ rotateY: 0 }}
-                    animate={{ rotateY: 180 }}
-                    transition={{
-                      duration: FLIP_MS / 1000,
-                      ease: [0.25, 0.1, 0.25, 1],
-                    }}
-                    onAnimationComplete={handleFlipComplete}
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      transformOrigin: 'right center',
-                      transformStyle: 'preserve-3d',
-                      zIndex: 50,
-                      boxShadow: '-14px 0 38px rgba(0,0,0,0.35)',
-                    }}
-                  >
-                    {/* Front Face: current left page */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        backfaceVisibility: 'hidden',
-                        WebkitBackfaceVisibility: 'hidden',
-                        zIndex: 2,
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {SPREADS[flip.from]?.left}
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: [0, 0.45, 0.95] }}
-                        transition={{ duration: FLIP_MS / 1000, ease: 'easeIn' }}
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          background: 'linear-gradient(270deg, rgba(0,0,0,0.55) 0%, transparent 60%)',
-                          pointerEvents: 'none',
-                        }}
-                      />
-                    </div>
-
-                    {/* Back Face: target right page */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        backfaceVisibility: 'hidden',
-                        WebkitBackfaceVisibility: 'hidden',
-                        transform: 'rotateY(180deg)',
-                        zIndex: 1,
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {SPREADS[flip.to]?.right}
-                      <motion.div
-                        initial={{ opacity: 0.85 }}
-                        animate={{ opacity: 0 }}
-                        transition={{ duration: FLIP_MS / 1000, ease: 'easeOut' }}
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          background: 'linear-gradient(90deg, rgba(0,0,0,0.38) 0%, transparent 70%)',
-                          pointerEvents: 'none',
-                        }}
-                      />
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Left corner hint */}
-                {index > 0 && !flip && (
-                  <PageCornerHint dir="left" onClick={goPrev} />
-                )}
-              </div>
-
-              {/* ── RIGHT HALF ── */}
-              <div
-                onClick={() => !flip && goNext()}
-                style={{
-                  position: 'relative',
-                  width: '50%',
-                  height: '100%',
-                  cursor: !flip ? 'pointer' : 'default',
-                  overflow: 'hidden',
-                }}
-              >
-                {/* Base Right Page (Underneath) */}
-                {flip?.dir === 'next' ? (
-                  flip.closing ? (
-                    <BackCoverInside />
-                  ) : (
-                    SPREADS[flip.to]?.right
-                  )
-                ) : (
-                  SPREADS[index]?.right
-                )}
-
-                {/* Page spine shadow */}
-                <div
-                  className="page-curl-shadow"
-                  style={{
-                    background: 'linear-gradient(90deg, transparent 60%, rgba(0,0,0,0.08) 100%)',
-                    pointerEvents: 'none',
-                  }}
-                />
-
-                {/* Ambient dynamic shadow on Right Page during PREV flip */}
-                {flip?.dir === 'prev' && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: [0, 0.35, 0] }}
-                    transition={{ duration: FLIP_MS / 1000, ease: [0.25, 0.1, 0.25, 1] }}
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      background: 'linear-gradient(270deg, rgba(0,0,0,0.42) 0%, transparent 65%)',
-                      pointerEvents: 'none',
-                      zIndex: 25,
-                    }}
-                  />
-                )}
-
-                {/* TURNING LEAF FOR NEXT FLIP (Rotates 0deg -> -180deg from left edge) */}
-                {flip?.dir === 'next' && (
-                  <motion.div
-                    initial={{ rotateY: 0 }}
-                    animate={{ rotateY: -180 }}
-                    transition={{
-                      duration: FLIP_MS / 1000,
-                      ease: [0.25, 0.1, 0.25, 1],
-                    }}
-                    onAnimationComplete={handleFlipComplete}
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      transformOrigin: 'left center',
-                      transformStyle: 'preserve-3d',
-                      zIndex: 50,
-                      boxShadow: '14px 0 38px rgba(0,0,0,0.35)',
-                    }}
-                  >
-                    {/* Front Face: current right page */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        backfaceVisibility: 'hidden',
-                        WebkitBackfaceVisibility: 'hidden',
-                        zIndex: 2,
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {SPREADS[flip.from]?.right}
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: [0, 0.45, 0.95] }}
-                        transition={{ duration: FLIP_MS / 1000, ease: 'easeIn' }}
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          background: 'linear-gradient(90deg, rgba(0,0,0,0.55) 0%, transparent 60%)',
-                          pointerEvents: 'none',
-                        }}
-                      />
-                    </div>
-
-                    {/* Back Face: target left page */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        backfaceVisibility: 'hidden',
-                        WebkitBackfaceVisibility: 'hidden',
-                        transform: 'rotateY(180deg)',
-                        zIndex: 1,
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {flip.closing ? (
-                        <BackCoverInside />
-                      ) : (
-                        SPREADS[flip.to]?.left
-                      )}
-                      <motion.div
-                        initial={{ opacity: 0.85 }}
-                        animate={{ opacity: 0 }}
-                        transition={{ duration: FLIP_MS / 1000, ease: 'easeOut' }}
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          background: 'linear-gradient(270deg, rgba(0,0,0,0.38) 0%, transparent 70%)',
-                          pointerEvents: 'none',
-                        }}
-                      />
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Right corner hint */}
-                {!flip && (
-                  <PageCornerHint dir="right" onClick={goNext} />
-                )}
-              </div>
+              {/* Corner Hints */}
+              {index > 0 && (
+                <PageCornerHint dir="left" onClick={goPrev} disabled={isAnimating} />
+              )}
+              <PageCornerHint dir="right" onClick={goNext} disabled={isAnimating} />
 
               {/* Luxury Close button */}
               <button
@@ -1721,6 +1772,7 @@ function Sketchbook() {
                   e.stopPropagation()
                   closeBook()
                 }}
+                aria-label="Close Sketchbook"
                 style={{
                   position: 'absolute',
                   top: 8,
@@ -1748,45 +1800,76 @@ function Sketchbook() {
         </AnimatePresence>
       </div>
 
-      {/* Navigation Controls */}
-      {open && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.4 }}
-          style={{
-            marginTop: 28,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 16,
-          }}
-        >
-          <button onClick={goPrev} disabled={!!flip} style={navBtnStyle(!!flip)}>
-            <ChevronLeft size={16} /> Prev
-          </button>
+      {/* Navigation Controls with reserved height to prevent vertical layout jump */}
+      <div
+        style={{
+          marginTop: 24,
+          minHeight: 48,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 6 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 16,
+              }}
+            >
+              <button
+                onClick={goPrev}
+                disabled={isAnimating || index === 0}
+                style={navBtnStyle(isAnimating || index === 0)}
+              >
+                <ChevronLeft size={16} /> Prev
+              </button>
 
-          <div style={{ display: 'flex', gap: 6 }}>
-            {SPREADS.map((_, i) => (
-              <div
-                key={i}
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: '50%',
-                  background: i === index ? '#ffd700' : 'rgba(255,255,255,0.25)',
-                  boxShadow: i === index ? '0 0 8px rgba(255, 215, 0, 0.8)' : 'none',
-                  transition: 'all 0.3s ease',
-                }}
-              />
-            ))}
-          </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {SPREADS.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      if (isAnimating || i === index) return
+                      setDirection(i > index ? 1 : -1)
+                      setIndex(i)
+                      setTransitioning(true)
+                    }}
+                    aria-label={`Go to page spread ${i + 1}`}
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      padding: 0,
+                      border: 'none',
+                      background: i === index ? '#ffd700' : 'rgba(255,255,255,0.25)',
+                      boxShadow: i === index ? '0 0 8px rgba(255, 215, 0, 0.8)' : 'none',
+                      transform: i === index ? 'scale(1.25)' : 'scale(1)',
+                      transition: 'all 0.25s ease',
+                      cursor: isAnimating ? 'default' : 'pointer',
+                    }}
+                  />
+                ))}
+              </div>
 
-          <button onClick={goNext} disabled={!!flip} style={navBtnStyle(!!flip)}>
-            Next <ChevronRight size={16} />
-          </button>
-        </motion.div>
-      )}
+              <button
+                onClick={goNext}
+                disabled={isAnimating}
+                style={navBtnStyle(isAnimating)}
+              >
+                Next <ChevronRight size={16} />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </section>
   )
 }

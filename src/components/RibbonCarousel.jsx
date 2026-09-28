@@ -9,26 +9,7 @@ import { PHOTOS } from '../photosData'
    Fully responsive across mobile/tablet/desktop · Battery & GPU optimized
    ══════════════════════════════════════════════════════════════════════════════ */
 
-/* SVG Path for the 3D continuous flowing ribbon curve.
-   A sweeping S-curve with a majestic focal loop in the center.
-   ViewBox: 0 0 1600 900 */
-const RIBBON_SVG_PATH =
-  'M -180,820 ' +
-  'C 60,800 240,710 400,560 ' +
-  'C 510,460 550,350 580,260 ' +
-  'C 610,160 685,130 790,130 ' +
-  'C 900,130 980,180 1000,280 ' +
-  'C 1015,390 950,510 850,545 ' +
-  'C 750,575 650,540 610,445 ' +
-  'C 570,350 600,265 680,235 ' +
-  'C 770,205 870,280 970,405 ' +
-  'C 1090,550 1260,670 1470,720 ' +
-  'C 1600,750 1720,780 1880,790'
-
-const VIEW_W = 1600
-const VIEW_H = 900
-const CARD_COUNT = 24 // 24 cards (12 photos repeated seamlessly for dense infinite ribbon)
-const LOOKUP_SAMPLES = 600
+const CARD_COUNT = 12 // 12 photos in circular orbit
 
 /* ══════════════════════════════════════════════════════════════
    LAYER: LIVING SUNLIGHT & BOKEH PARTICLES CANVAS
@@ -86,20 +67,8 @@ const LivingAtmosphereCanvas = memo(function LivingAtmosphereCanvas({ mouseRef, 
       smoothLightX += (targetLightX - smoothLightX) * 0.03
       smoothLightY += (targetLightY - smoothLightY) * 0.03
 
-      // 1. Soft Warm Ambient Glow
-      const sunBeamGrad = ctx.createRadialGradient(
-        smoothLightX,
-        smoothLightY,
-        0,
-        smoothLightX,
-        smoothLightY,
-        Math.min(w, h) * (isMobile ? 0.38 : 0.45)
-      )
-      sunBeamGrad.addColorStop(0, 'rgba(255, 248, 230, 0.22)')
-      sunBeamGrad.addColorStop(0.5, 'rgba(245, 230, 205, 0.07)')
-      sunBeamGrad.addColorStop(1, 'rgba(245, 230, 205, 0)')
-      ctx.fillStyle = sunBeamGrad
-      ctx.fillRect(0, 0, w, h)
+      // Golden Champagne Atmosphere over video
+      ctx.clearRect(0, 0, w, h)
 
       // 2. Optical Lens Glint tracking the focal ribbon node
       if (focalPosRef?.current) {
@@ -203,7 +172,7 @@ const CinematicHeroTitle = memo(function CinematicHeroTitle({ activePhoto }) {
             textShadow: '0 0 12px rgba(255, 230, 153, 0.6), 0 2px 8px rgba(0, 0, 0, 0.95)',
           }}
         >
-          ✦ A Collection of Moments ✦
+          A Collection of Moments
         </span>
         <span style={{ width: 28, height: 1.5, background: '#FFD700', boxShadow: '0 0 10px #FFD700', opacity: 0.85 }} />
       </motion.div>
@@ -319,196 +288,6 @@ const CinematicHeroTitle = memo(function CinematicHeroTitle({ activePhoto }) {
   )
 })
 
-/* ══════════════════════════════════════════════════════════════
-   LAYER: EDITORIAL CORNER COUNTER & CONTROL INDICATOR
-   ══════════════════════════════════════════════════════════════ */
-const EditorialMetaInfo = memo(function EditorialMetaInfo({ currentFocalIndex, totalUnique }) {
-  const formattedIndex = String((currentFocalIndex % totalUnique) + 1).padStart(2, '0')
-  const formattedTotal = String(totalUnique).padStart(2, '0')
-
-  return (
-    <div
-      className="absolute top-4 sm:top-8 right-4 sm:right-8 z-30 pointer-events-none flex flex-col items-end"
-      style={{
-        padding: '6px 14px',
-        borderRadius: 12,
-        background: 'rgba(6, 12, 27, 0.65)',
-        border: '1px solid rgba(255, 215, 0, 0.3)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.6)',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-        <span
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 'clamp(22px, 4vw, 30px)',
-            fontWeight: 400,
-            color: '#FFFFFF',
-            lineHeight: 1,
-            textShadow: '0 0 18px rgba(255, 215, 0, 0.6), 0 2px 10px rgba(0, 0, 0, 0.95)',
-          }}
-        >
-          {formattedIndex}
-        </span>
-        <span style={{ fontSize: '13px', color: '#FFD700', fontWeight: 300, textShadow: '0 0 10px #FFD700' }}>/</span>
-        <span
-          style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: '11px',
-            color: '#FFE699',
-            letterSpacing: '0.12em',
-            fontWeight: 600,
-          }}
-        >
-          {formattedTotal}
-        </span>
-      </div>
-      <span
-        style={{
-          fontFamily: 'var(--font-sans)',
-          fontSize: '8.5px',
-          letterSpacing: '0.22em',
-          textTransform: 'uppercase',
-          color: '#E6C86A',
-          marginTop: 2,
-          textShadow: '0 1px 6px rgba(0, 0, 0, 0.9)',
-        }}
-      >
-        Memory Orbit
-      </span>
-    </div>
-  )
-})
-
-/* ══════════════════════════════════════════════════════════════
-   LAYER: INTERACTION GUIDES & SCROLL INDICATOR
-   ══════════════════════════════════════════════════════════════ */
-const InteractionControls = memo(function InteractionControls() {
-  return (
-    <div
-      className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex flex-col items-center gap-1.5"
-    >
-      <div
-        style={{
-          padding: '5px 16px',
-          borderRadius: 999,
-          background: 'rgba(6, 12, 27, 0.72)',
-          border: '1px solid rgba(255, 215, 0, 0.35)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          color: '#FFE699',
-          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.7)',
-          textShadow: '0 0 10px rgba(255, 230, 153, 0.6), 0 1px 4px rgba(0, 0, 0, 0.95)',
-        }}
-        className="flex items-center gap-2 sm:gap-3 text-[9px] sm:text-[10.5px] tracking-widest uppercase font-sans font-semibold"
-      >
-        <span>Drag / Swipe to Orbit</span>
-        <span style={{ color: '#FFD700' }}>•</span>
-        <span>Scroll to Travel</span>
-      </div>
-
-      <div className="scroll-indicator flex flex-col items-center">
-        <svg width="18" height="24" viewBox="0 0 18 26" fill="none">
-          <rect x="1" y="1" width="16" height="24" rx="8" stroke="#FFD700" strokeWidth="1.2" opacity="0.85" />
-          <circle cx="9" cy="8" r="2.2" fill="#FFE699">
-            <animate
-              attributeName="cy"
-              values="8;17;8"
-              dur="2.2s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="opacity"
-              values="1;0.3;1"
-              dur="2.2s"
-              repeatCount="indefinite"
-            />
-          </circle>
-        </svg>
-      </div>
-    </div>
-  )
-})
-
-/* ══════════════════════════════════════════════════════════════
-   LAYER: CINEMATIC BACKGROUND VIDEO (0.5x Slow Playback)
-   ══════════════════════════════════════════════════════════════ */
-const Page2BackgroundVideo = memo(function Page2BackgroundVideo({ isInView = true }) {
-  const videoRef = useRef(null)
-
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-    video.playbackRate = 0.5
-
-    const applySlowSpeed = () => {
-      if (video) video.playbackRate = 0.5
-    }
-
-    video.addEventListener('play', applySlowSpeed)
-    video.addEventListener('loadedmetadata', applySlowSpeed)
-
-    return () => {
-      video.removeEventListener('play', applySlowSpeed)
-      video.removeEventListener('loadedmetadata', applySlowSpeed)
-    }
-  }, [])
-
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-    if (isInView) {
-      video.play().catch(() => {})
-    } else {
-      video.pause()
-    }
-  }, [isInView])
-
-  return (
-    <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
-      {/* Video with top and bottom soft mask feathering */}
-      <div
-        className="w-full h-full"
-        style={{
-          maskImage: 'linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%)',
-        }}
-      >
-        <video
-          ref={videoRef}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover"
-          style={{
-            filter: 'brightness(0.95) contrast(1.02)',
-          }}
-        >
-          <source src="/2-page.mp4" type="video/mp4" />
-        </video>
-      </div>
-
-      {/* Top seamless blend fade into Page 1 */}
-      <div
-        className="absolute top-0 left-0 right-0 h-36 sm:h-48 pointer-events-none z-10"
-        style={{
-          background: 'linear-gradient(to bottom, #060c1b 0%, rgba(6, 12, 27, 0.7) 45%, transparent 100%)',
-        }}
-      />
-
-      {/* Bottom seamless blend fade into Page 3 */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-36 sm:h-48 pointer-events-none z-10"
-        style={{
-          background: 'linear-gradient(to top, #060c1b 0%, rgba(6, 12, 27, 0.7) 45%, transparent 100%)',
-        }}
-      />
-    </div>
-  )
-})
 
 /* ── Memoized 24 Cards Field: Prevents re-rendering 24 cards on focal index change ── */
 const RibbonCardsField = memo(function RibbonCardsField({ cards, cardRefs, onPhotoClick, velocityRef }) {
@@ -539,17 +318,7 @@ const RibbonCardsField = memo(function RibbonCardsField({ cards, cardRefs, onPho
               draggable={false}
             />
           </div>
-          <div
-            className="text-center pt-0.5 overflow-hidden text-ellipsis whitespace-nowrap"
-            style={{
-              fontFamily: 'var(--font-script)',
-              fontSize: 'clamp(9px, 1.8vw, 12px)',
-              color: '#573d21',
-              lineHeight: 1.2,
-            }}
-          >
-            {card.title}
-          </div>
+
         </div>
       ))}
     </>
@@ -564,10 +333,8 @@ function RibbonCarousel({ onPhotoClick, isViewerOpen = false }) {
   const isSectionInView = useInView(sectionRef, { margin: '200px 0px' })
 
   const containerRef = useRef(null)
-  const pathRef = useRef(null)
   const cardRefs = useRef([])
   const rafRef = useRef(null)
-  const lookupTableRef = useRef([])
 
   // Motion physics states (stored in mutable refs for 60fps zero-react-render pipeline)
   const progressRef = useRef(0.35)
@@ -592,45 +359,7 @@ function RibbonCarousel({ onPhotoClick, isViewerOpen = false }) {
     }))
   }, [])
 
-  // Precompute 600-point path lookup table with upright orientation guarantees
-  const generateLookupTable = useCallback(() => {
-    const pathEl = pathRef.current
-    if (!pathEl) return
 
-    const totalLen = pathEl.getTotalLength()
-    const table = []
-
-    for (let s = 0; s <= LOOKUP_SAMPLES; s++) {
-      const dist = (s / LOOKUP_SAMPLES) * totalLen
-      const pt = pathEl.getPointAtLength(dist)
-      const ptNext = pathEl.getPointAtLength((dist + 4) % totalLen)
-
-      let angle = Math.atan2(ptNext.y - pt.y, ptNext.x - pt.x) * (180 / Math.PI)
-      while (angle > 180) angle -= 360
-      while (angle < -180) angle += 360
-
-      // Normalize angle so photo cards are ALWAYS upright (never upside down)
-      if (angle > 90) angle -= 180
-      else if (angle < -90) angle += 180
-
-      // Soft clamp to natural floating tilt [-28deg, 28deg]
-      const clampedAngle = Math.max(-28, Math.min(28, angle * 0.55))
-
-      table.push({
-        x: pt.x,
-        y: pt.y,
-        angle: clampedAngle,
-      })
-    }
-
-    lookupTableRef.current = table
-  }, [])
-
-  useEffect(() => {
-    generateLookupTable()
-    window.addEventListener('resize', generateLookupTable)
-    return () => window.removeEventListener('resize', generateLookupTable)
-  }, [generateLookupTable])
 
   // Desktop Mouse Parallax Tracking
   useEffect(() => {
@@ -770,7 +499,7 @@ function RibbonCarousel({ onPhotoClick, isViewerOpen = false }) {
   useEffect(() => {
     if (!isSectionInView) return
 
-    const spacing = 1.0 / CARD_COUNT
+
     let time = 0
     let lastFocalCheck = 0
 
@@ -800,103 +529,94 @@ function RibbonCarousel({ onPhotoClick, isViewerOpen = false }) {
         containerRef.current.style.transform = `perspective(1400px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`
       }
 
-      const table = lookupTableRef.current
-      if (!table || table.length === 0) {
-        rafRef.current = requestAnimationFrame(tick)
-        return
-      }
-
-      const tableLen = table.length
       const winW = window.innerWidth
       const winH = window.innerHeight
       const isMobile = winW < 768
 
-      let bestFocalDist = 999
+      // ── Circular Orbit Parameters ──
+      const centerX = 58
+      const centerY = isMobile ? 50 : 48
+      const radiusX = isMobile ? 28 : 32
+      const radiusY = radiusX * 0.82 // subtle vertical compression for perspective
+
+      let bestFocalStrength = -1
       let bestFocalCard = 0
-      let focalPoint = { x: 50, y: 50 }
+      let focalPoint = { x: 58, y: 48 }
 
       for (let i = 0; i < CARD_COUNT; i++) {
         const el = cardRefs.current[i]
         if (!el) continue
 
-        const s = ((progressRef.current + i * spacing) % 1.0 + 1.0) % 1.0
-        const sampleIdx = s * (tableLen - 1)
-        const baseIdx = Math.floor(sampleIdx)
-        const frac = sampleIdx - baseIdx
-        const p1 = table[baseIdx]
-        const p2 = table[Math.min(baseIdx + 1, tableLen - 1)]
+        // Evenly distribute cards around the full circle
+        const baseAngle = (i / CARD_COUNT) * Math.PI * 2
+        const angle = baseAngle + progressRef.current * Math.PI * 2
 
-        const ptX = p1.x + (p2.x - p1.x) * frac
-        const ptY = p1.y + (p2.y - p1.y) * frac
-        const baseAngle = p1.angle + (p2.angle - p1.angle) * frac
+        // Screen-space angle: offset so angle=0 → 12 o'clock (top)
+        const sa = angle - Math.PI / 2
 
-        const focalCenter = 0.50
-        const distToFocal = Math.abs(s - focalCenter)
-        const focalRange = isMobile ? 0.22 : 0.28
-        const focalStrength = Math.max(0, 1.0 - distToFocal / focalRange)
-        const smoothedFocal = Math.pow(focalStrength, 1.6)
+        // Position on elliptical orbit
+        let xPct = centerX + radiusX * Math.cos(sa)
+        let yPct = centerY + radiusY * Math.sin(sa)
 
-        if (distToFocal < bestFocalDist) {
-          bestFocalDist = distToFocal
-          bestFocalCard = i
-          focalPoint = { x: (ptX / VIEW_W) * 100, y: (ptY / VIEW_H) * 100 }
-        }
+        // Tangent rotation (card follows the arc)
+        const tangentDeg = (sa * 180 / Math.PI) + 90
 
-        const parallaxDepthFactor = 0.4 + smoothedFocal * 1.8
-        const px = (mx - 0.5) * (isMobile ? 6 : 12) * parallaxDepthFactor
-        const py = (my - 0.5) * (isMobile ? 3 : 6) * parallaxDepthFactor
+        // Gentle floating breath
+        const breatheY = Math.sin(time * 1.4 + i * 0.52) * 0.8
 
-        const breatheY = Math.sin(time * 1.2 + i * 0.35) * (1.2 + smoothedFocal * 1.8)
+        // Focal strength: strongest at top (sin(sa)=-1), weakest at bottom (sin(sa)=+1)
+        const verticalPos = Math.sin(sa)
+        const rawFocal = (-verticalPos + 1) / 2
+        const focalStrength = Math.pow(Math.max(0, rawFocal), 1.5)
 
-        let xPct = (ptX / VIEW_W) * 100 + (px / winW) * 100
-        let yPct = (ptY / VIEW_H) * 82 + 9 + (py / winH) * 100 + breatheY * 0.05
+        // Mouse parallax depth
+        const parallaxK = 0.3 + focalStrength * 0.6
+        const px = (mx - 0.5) * (isMobile ? 3 : 7) * parallaxK
+        const py = (my - 0.5) * (isMobile ? 1.5 : 3.5) * parallaxK
 
-        if (isMobile) {
-          xPct = 50 + (xPct - 50) * 1.25
-          yPct = 50 + (yPct - 50) * 1.12
-        }
+        xPct += px * 0.12
+        yPct += py * 0.12 + breatheY * 0.1
 
+        // Scale: larger at top, smaller at bottom
         const scale = isMobile
-          ? 0.70 + smoothedFocal * 0.42
-          : 0.78 + smoothedFocal * 0.48
+          ? 0.52 + focalStrength * 0.55
+          : 0.62 + focalStrength * 0.52
 
-        const zIndex = Math.round(10 + smoothedFocal * 120)
-
-        let opacity = Math.min(1, 0.55 + smoothedFocal * 0.45)
-        if (isMobile && distToFocal > 0.20) {
-          opacity = Math.max(0, (0.28 - distToFocal) / 0.08) * 0.55
+        // Opacity: full in upper arc, faded in lower arc
+        let opacity
+        if (verticalPos > 0.55) {
+          opacity = Math.max(0.04, ((1.0 - verticalPos) / 0.45) * 0.45)
+        } else {
+          opacity = 0.42 + focalStrength * 0.58
         }
 
-        // Culling optimization: Completely hide off-arc cards on mobile
-        if (opacity <= 0.02) {
+        const zIndex = Math.round(10 + focalStrength * 120)
+
+        // Cull invisible cards
+        if (opacity < 0.03) {
           el.style.visibility = 'hidden'
           continue
-        } else {
-          el.style.visibility = 'visible'
         }
-
-        const dynamicTilt = Math.sin(time + i * 0.7) * 2.0
-        const finalAngle = baseAngle + dynamicTilt
+        el.style.visibility = 'visible'
 
         el.style.left = `${xPct}%`
         el.style.top = `${yPct}%`
         el.style.zIndex = zIndex
         el.style.opacity = opacity
+        el.style.filter = 'none'
+        el.style.transform = `translate(-50%, -50%) rotate(${tangentDeg}deg) scale(${scale})`
 
-        // Performance: Avoid expensive CSS filter blur on mobile devices
-        if (!isMobile && smoothedFocal < 0.8) {
-          const blurAmount = Math.max(0, (1 - smoothedFocal) * 2.0).toFixed(1)
-          el.style.filter = blurAmount > 0.4 ? `blur(${blurAmount}px)` : 'none'
+        if (focalStrength > 0.65) {
+          el.style.boxShadow = `0 14px 38px rgba(0, 0, 0, ${0.28 * focalStrength}), 0 0 18px rgba(197, 155, 39, ${0.12 * focalStrength})`
         } else {
-          el.style.filter = 'none'
+          el.style.boxShadow = `0 6px 16px rgba(0, 0, 0, 0.12)`
         }
 
-        el.style.transform = `translate(-50%, -50%) rotate(${finalAngle}deg) scale(${scale})`
-
-        if (smoothedFocal > 0.65) {
-          el.style.boxShadow = `0 16px 40px rgba(197, 155, 39, ${0.25 * smoothedFocal}), 0 6px 16px rgba(87, 61, 33, 0.12)`
-        } else {
-          el.style.boxShadow = `0 4px 14px rgba(87, 61, 33, 0.10)`
+        // Track the most focal card
+        if (focalStrength > bestFocalStrength) {
+          bestFocalStrength = focalStrength
+          bestFocalCard = i
+          focalPoint = { x: xPct, y: yPct }
         }
       }
 
@@ -933,8 +653,6 @@ function RibbonCarousel({ onPhotoClick, isViewerOpen = false }) {
         touchAction: 'pan-y',
       }}
     >
-      {/* ── Page 2 Video Background (0.5x Slow Motion, paused when offscreen) ── */}
-      <Page2BackgroundVideo isInView={isSectionInView} />
 
       {/* ── Living Sunlight, Ambient Aura & Golden Dust Particles ── */}
       <LivingAtmosphereCanvas mouseRef={mouseRef} focalPosRef={focalPosRef} isInView={isSectionInView} />
@@ -942,17 +660,7 @@ function RibbonCarousel({ onPhotoClick, isViewerOpen = false }) {
       {/* ── Cinematic Editorial Title Sequence ── */}
       <CinematicHeroTitle activePhoto={cards[focalCardIndex]} />
 
-      {/* ── Editorial Top-Right Index Counter ── */}
-      <EditorialMetaInfo currentFocalIndex={focalCardIndex} totalUnique={PHOTOS.length} />
 
-      {/* ── Hidden Parametric 3D SVG Ribbon Curve Guide ── */}
-      <svg
-        className="absolute inset-0 w-full h-full pointer-events-none opacity-0"
-        viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-        preserveAspectRatio="none"
-      >
-        <path ref={pathRef} d={RIBBON_SVG_PATH} fill="none" stroke="none" />
-      </svg>
 
       {/* ── 3D Master Ribbon Carousel Field (Perspective Matrix) ── */}
       <div
@@ -970,9 +678,6 @@ function RibbonCarousel({ onPhotoClick, isViewerOpen = false }) {
           velocityRef={velocityRef}
         />
       </div>
-
-      {/* ── Bottom Controls & Scroll Down Indicator ── */}
-      <InteractionControls />
     </section>
   )
 }
