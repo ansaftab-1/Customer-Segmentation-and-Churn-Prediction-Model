@@ -3,7 +3,7 @@
    Motion Language · Design Tokens · Component Styles
    ══════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Alex+Brush&family=Poppins:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Alex+Brush&family=Poppins:wght@300;400;500;600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 
 @import "tailwindcss";
 
@@ -90,7 +90,7 @@ body {
   background-color: #060c1b;
   color: var(--text-primary);
   font-family: var(--font-sans);
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -172,42 +172,39 @@ body {
   mix-blend-mode: multiply;
 }
 
-/* Ribbon Polaroid Cards — Luxury Tactile Craft */
+/* Ribbon Circular Arc Cards — Rounded Photo Orbit */
 .ribbon-polaroid {
   position: absolute;
-  width: 90px;
-  background: #ffffff;
-  padding: 5px 5px 16px 5px;
-  border-radius: 3px;
-  box-shadow:
-    0 4px 14px rgba(87, 61, 33, 0.12),
-    0 1px 3px rgba(0, 0, 0, 0.05);
+  width: 120px;
+  background: transparent;
+  padding: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
   cursor: pointer;
   will-change: transform, left, top, filter, opacity;
   transition:
     box-shadow var(--dur-fast) var(--ease-out-expo),
-    filter var(--dur-fast) var(--ease-out-expo),
-    border-color var(--dur-fast) var(--ease-out-expo);
+    filter var(--dur-fast) var(--ease-out-expo);
   user-select: none;
   backface-visibility: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  border: none;
 }
 
 .ribbon-polaroid:hover {
   box-shadow:
-    0 22px 48px rgba(197, 155, 39, 0.36),
-    0 8px 20px rgba(87, 61, 33, 0.18) !important;
+    0 18px 44px rgba(0, 0, 0, 0.35),
+    0 0 24px rgba(197, 155, 39, 0.2) !important;
   z-index: 250 !important;
-  filter: brightness(1.06) contrast(1.02) !important;
-  border-color: rgba(197, 155, 39, 0.4);
+  filter: brightness(1.08) contrast(1.03) !important;
 }
 
 .ribbon-polaroid-img {
   width: 100%;
-  height: 80px;
+  height: 88px;
   overflow: hidden;
-  border-radius: 2px;
-  background: #f0e8dc;
+  border-radius: 14px;
+  background: #1a1a1a;
   position: relative;
 }
 
@@ -216,7 +213,7 @@ body {
   height: 100%;
   object-fit: cover;
   display: block;
-  filter: sepia(0.06) contrast(1.03) saturate(1.06);
+  filter: saturate(1.1) contrast(1.05);
   transition: transform var(--dur-normal) var(--ease-out-expo);
 }
 
@@ -374,13 +371,11 @@ body {
 
 /* Depth layers */
 .gallery-polaroid.depth-bg {
-  filter: blur(1.5px) saturate(0.8);
-  opacity: 0.6;
+  opacity: 0.75;
 }
 
 .gallery-polaroid.depth-mid {
-  filter: blur(0.4px) saturate(0.95);
-  opacity: 0.82;
+  opacity: 0.9;
 }
 
 /* Floating animation */
@@ -427,6 +422,10 @@ body {
       transparent 28px,
       rgba(197, 155, 39, 0.04) 28px,
       rgba(197, 155, 39, 0.04) 29px);
+  will-change: transform;
+  contain: paint;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 /* Page curl shadow for page flip */
@@ -749,5 +748,23 @@ body {
 
   .galaxy-card {
     padding: 6px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MEMORIES PAGE — Cinematic Ken Burns Background Video
+   ═══════════════════════════════════════════════════════════ */
+@keyframes memoriesKenBurns {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  33% {
+    transform: scale(1.12) translate(-2%, 1%);
+  }
+  66% {
+    transform: scale(1.08) translate(1.5%, -1.5%);
+  }
+  100% {
+    transform: scale(1.15) translate(-1%, 2%);
   }
 }

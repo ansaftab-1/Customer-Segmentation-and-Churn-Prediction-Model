@@ -134,71 +134,6 @@ const GalleryCard = memo(function GalleryCard({ layout, photo, onClick, index })
   )
 })
 
-/* ── Page 3 Video Background (0.5x Slow Playback) ── */
-const GalleryBackgroundVideo = memo(function GalleryBackgroundVideo() {
-  const videoRef = useRef(null)
-
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-    video.playbackRate = 0.5
-
-    const applySlowSpeed = () => {
-      if (video) video.playbackRate = 0.5
-    }
-
-    video.addEventListener('play', applySlowSpeed)
-    video.addEventListener('loadedmetadata', applySlowSpeed)
-
-    return () => {
-      video.removeEventListener('play', applySlowSpeed)
-      video.removeEventListener('loadedmetadata', applySlowSpeed)
-    }
-  }, [])
-
-  return (
-    <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
-      {/* Video with top and bottom soft mask feathering */}
-      <div
-        className="w-full h-full"
-        style={{
-          maskImage: 'linear-gradient(to bottom, transparent 0%, black 16%, black 84%, transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 16%, black 84%, transparent 100%)',
-        }}
-      >
-        <video
-          ref={videoRef}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover"
-          style={{
-            filter: 'brightness(0.95) contrast(1.02)',
-          }}
-        >
-          <source src="/2-page.mp4" type="video/mp4" />
-        </video>
-      </div>
-
-      {/* Top seamless blend fade into Page 2 */}
-      <div
-        className="absolute top-0 left-0 right-0 h-48 pointer-events-none z-10"
-        style={{
-          background: 'linear-gradient(to bottom, #060c1b 0%, rgba(6, 12, 27, 0.7) 45%, transparent 100%)',
-        }}
-      />
-
-      {/* Bottom seamless blend fade into Page 4 */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none z-10"
-        style={{
-          background: 'linear-gradient(to top, #060c1b 0%, rgba(6, 12, 27, 0.7) 45%, transparent 100%)',
-        }}
-      />
-    </div>
-  )
-})
 
 /* ── Main Scattered Gallery with Mouse-Tracking Parallax ── */
 function ScatteredGallery({ onPhotoClick }) {
@@ -211,7 +146,7 @@ function ScatteredGallery({ onPhotoClick }) {
   const handleMouseMove = useCallback((e) => {
     const rect = sectionRef.current?.getBoundingClientRect()
     if (!rect) return
-    
+
     // Normalized coordinates (-1 to 1 from center)
     const cx = rect.left + rect.width / 2
     const cy = rect.top + rect.height / 2
@@ -260,8 +195,6 @@ function ScatteredGallery({ onPhotoClick }) {
       id="gallery"
       onMouseMove={handleMouseMove}
     >
-      {/* ── Page 3 Video Background (0.5x Slow Motion) ── */}
-      <GalleryBackgroundVideo />
 
       {/* Section Header */}
       <motion.div
@@ -271,20 +204,6 @@ function ScatteredGallery({ onPhotoClick }) {
         viewport={{ once: true }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       >
-        <p
-          style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: '11px',
-            fontWeight: 500,
-            letterSpacing: '0.24em',
-            textTransform: 'uppercase',
-            color: '#e6c86a',
-            marginBottom: 12,
-            textShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
-          }}
-        >
-          Chapter Two — Our Moments
-        </p>
         <h2
           className="text-shimmer"
           style={{

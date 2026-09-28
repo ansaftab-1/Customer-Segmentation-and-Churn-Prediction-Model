@@ -537,17 +537,6 @@ function StarlightGalaxy() {
         viewport={{ once: true }}
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
       >
-        <p style={{
-          fontFamily: 'var(--font-sans)',
-          fontSize: '11px',
-          fontWeight: 500,
-          letterSpacing: '0.2em',
-          textTransform: 'uppercase',
-          color: 'rgba(0, 242, 254, 0.5)',
-          marginBottom: 10,
-        }}>
-          Chapter Four · 3D Cosmos
-        </p>
         <h2 style={{
           fontFamily: 'var(--font-serif)',
           fontSize: 'clamp(28px, 4vw, 48px)',
@@ -561,15 +550,6 @@ function StarlightGalaxy() {
         >
           Starlight Memories
         </h2>
-        <p style={{
-          fontSize: 12,
-          color: 'rgba(255,255,255,0.6)',
-          marginTop: 8,
-          fontFamily: 'var(--font-sans)',
-          letterSpacing: '0.06em',
-        }}>
-          ✨ Swipe to rotate 3D celestial sphere · Tap any memory to view ✨
-        </p>
       </motion.div>
 
       {/* ── 3D Dimensional Celestial Stage ── */}
