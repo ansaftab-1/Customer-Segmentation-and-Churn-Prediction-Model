@@ -61,10 +61,6 @@ const StarCanvas = memo(function StarCanvas({ mouseRef, isInView = true }) {
 
     let time = 0
     function draw() {
-      if (!isInView) {
-        animId = requestAnimationFrame(draw)
-        return
-      }
       time += 16
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
@@ -112,7 +108,9 @@ const StarCanvas = memo(function StarCanvas({ mouseRef, isInView = true }) {
       animId = requestAnimationFrame(draw)
     }
 
-    draw()
+    if (isInView) {
+      animId = requestAnimationFrame(draw)
+    }
 
     return () => {
       window.removeEventListener('resize', resize)
@@ -352,6 +350,24 @@ function StarlightGalaxy() {
     }
   }, [isInView])
 
+  const rectRef = useRef(null)
+
+  const updateRect = useCallback(() => {
+    if (sectionRef.current) {
+      rectRef.current = sectionRef.current.getBoundingClientRect()
+    }
+  }, [])
+
+  useEffect(() => {
+    updateRect()
+    window.addEventListener('resize', updateRect, { passive: true })
+    window.addEventListener('scroll', updateRect, { passive: true })
+    return () => {
+      window.removeEventListener('resize', updateRect)
+      window.removeEventListener('scroll', updateRect)
+    }
+  }, [updateRect])
+
   /* Pointer tracking for 3D celestial sphere drag & mouse parallax */
   const handlePointerDown = useCallback((e) => {
     if (e.target.closest('.galaxy-card-3d') || e.target.closest('button')) return
@@ -363,7 +379,10 @@ function StarlightGalaxy() {
   }, [])
 
   const handlePointerMove = useCallback((e) => {
-    const rect = sectionRef.current?.getBoundingClientRect()
+    if (!rectRef.current && sectionRef.current) {
+      rectRef.current = sectionRef.current.getBoundingClientRect()
+    }
+    const rect = rectRef.current
     if (rect) {
       mouseRef.current = {
         x: (e.clientX - rect.left) / rect.width,
@@ -388,14 +407,11 @@ function StarlightGalaxy() {
 
   /* 3D Celestial Physics Animation Loop — 60 FPS via direct hardware-accelerated transforms */
   useEffect(() => {
+    if (!isInView) return
+
     let time = 0
 
     function animate() {
-      if (!isInView) {
-        rafRef.current = requestAnimationFrame(animate)
-        return
-      }
-
       time += 0.012
 
       // Inertia decay on release
