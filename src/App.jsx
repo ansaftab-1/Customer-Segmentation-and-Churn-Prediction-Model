@@ -1,22 +1,43 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, lazy, Suspense, memo } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import RibbonCarousel from './components/RibbonCarousel'
 import ScatteredGallery from './components/ScatteredGallery'
 import Sketchbook from './components/Sketchbook'
 import StarlightGalaxy from './components/StarlightGalaxy'
 import BirthdayFinale from './components/BirthdayFinale'
-import ImageModal from './components/ImageModal'
+
+const ImageModal = lazy(() => import('./components/ImageModal'))
+
 /* ── Unified Living Background Video for Page 2 & Page 3 (page-4.mp4 - Pure & Unblurred) ── */
-function ContinuousMemoriesBackground() {
+const ContinuousMemoriesBackground = memo(function ContinuousMemoriesBackground() {
   const videoRef = useRef(null)
+  const containerRef = useRef(null)
 
   useEffect(() => {
     const video = videoRef.current
-    if (video) video.play().catch(() => {})
+    const container = containerRef.current
+    if (!video || !container) return
+
+    // Pause video playback when Page 2 & 3 universe is not in viewport
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries
+        if (entry.isIntersecting) {
+          video.play().catch(() => {})
+        } else {
+          video.pause()
+        }
+      },
+      { threshold: 0.05 }
+    )
+
+    observer.observe(container)
+    return () => observer.disconnect()
   }, [])
 
   return (
     <div
+      ref={containerRef}
       className="sticky top-0 w-full h-screen h-[100dvh] overflow-hidden pointer-events-none z-0"
       style={{ willChange: 'transform' }}
     >
@@ -26,6 +47,7 @@ function ContinuousMemoriesBackground() {
         loop
         muted
         playsInline
+        preload="metadata"
         className="w-full h-full object-cover"
         style={{
           position: 'absolute',
@@ -39,7 +61,7 @@ function ContinuousMemoriesBackground() {
       </video>
     </div>
   )
-}
+})
 
 export default function App() {
   const [selectedPhoto, setSelectedPhoto] = useState(null)
@@ -57,23 +79,40 @@ export default function App() {
     setSelectedPhoto(photo)
   }, [])
 
-  /* Scroll progress bar */
+  /* Scroll progress bar with requestAnimationFrame throttling */
   useEffect(() => {
+    let ticking = false
+    let rafId = null
+
     const updateProgress = () => {
       const el = progressRef.current
-      if (!el) return
+      if (!el) {
+        ticking = false
+        return
+      }
 
       const scrollTop = window.scrollY
       const docHeight = document.documentElement.scrollHeight - window.innerHeight
       const progress = docHeight > 0 ? scrollTop / docHeight : 0
 
       el.style.transform = `scaleX(${progress})`
+      ticking = false
     }
 
-    window.addEventListener('scroll', updateProgress, { passive: true })
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true
+        rafId = requestAnimationFrame(updateProgress)
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
     updateProgress()
 
-    return () => window.removeEventListener('scroll', updateProgress)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      if (rafId) cancelAnimationFrame(rafId)
+    }
   }, [])
 
   return (
@@ -105,14 +144,16 @@ export default function App() {
       {/* ── Act 5: Cosmos — Starlight Galaxy ── */}
       <StarlightGalaxy />
 
-      {/* ── Full-screen Image Modal ── */}
+      {/* ── Full-screen Image Modal (Lazy Loaded) ── */}
       <AnimatePresence>
         {selectedPhoto && (
-          <ImageModal
-            photo={selectedPhoto}
-            onClose={handleCloseModal}
-            onNavigate={handleNavigate}
-          />
+          <Suspense fallback={null}>
+            <ImageModal
+              photo={selectedPhoto}
+              onClose={handleCloseModal}
+              onNavigate={handleNavigate}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
     </main>
