@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef, memo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useSpring } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { PHOTOS } from '../photosData'
 
@@ -123,93 +123,6 @@ const ScrapPhoto = memo(function ScrapPhoto({ src, alt, width = 110, rotation = 
         loading="eager"
         draggable={false}
       />
-    </div>
-  )
-})
-
-/* Polaroid video component with washi tape & glass luster */
-const ScrapVideo = memo(function ScrapVideo({
-  src,
-  width = 150,
-  rotation = 0,
-  tapeColor,
-  caption,
-  style = {}
-}) {
-  const videoRef = useRef(null)
-
-  useEffect(() => {
-    const v = videoRef.current
-    if (!v) return
-    v.play().catch(() => { })
-  }, [src])
-
-  return (
-    <div style={{
-      position: 'relative',
-      width,
-      background: '#ffffff',
-      padding: `${width * 0.04}px ${width * 0.04}px ${caption ? width * 0.16 : width * 0.08}px`,
-      boxShadow: '0 10px 28px rgba(87, 61, 33, 0.22), 0 2px 8px rgba(0,0,0,0.08)',
-      transform: `rotate(${rotation}deg)`,
-      zIndex: 8,
-      borderRadius: 3,
-      border: '1px solid rgba(255, 255, 255, 0.85)',
-      ...style,
-    }}>
-      {tapeColor && (
-        <WashiTape
-          top={-9}
-          left="22%"
-          color={tapeColor}
-          rotation={rotation >= 0 ? -3 : 3}
-          width={width * 0.52}
-        />
-      )}
-      <div style={{
-        width: '100%',
-        height: width * 0.82,
-        overflow: 'hidden',
-        borderRadius: 2,
-        background: '#0d1322',
-        position: 'relative',
-      }}>
-        <video
-          ref={videoRef}
-          src={src}
-          autoPlay
-          loop
-          muted
-          playsInline
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            display: 'block',
-            filter: 'contrast(1.05) saturate(1.08)',
-          }}
-        />
-        {/* Subtle glass reflection sheen */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 55%)',
-          pointerEvents: 'none',
-        }} />
-      </div>
-      {caption && (
-        <div style={{
-          fontFamily: 'var(--font-script)',
-          fontSize: 'clamp(10px, 2.2vw, 13px)',
-          color: '#573d21',
-          textAlign: 'center',
-          marginTop: 4,
-          lineHeight: 1.2,
-          letterSpacing: '0.02em',
-        }}>
-          {caption}
-        </div>
-      )}
     </div>
   )
 })
@@ -702,7 +615,8 @@ const Spread4Right = memo(function Spread4Right({ onPhotoClick }) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
-  const [mouseTilt, setMouseTilt] = useState({ rx: 0, ry: 0 })
+  const tiltX = useSpring(0, { stiffness: 180, damping: 20 })
+  const tiltY = useSpring(0, { stiffness: 180, damping: 20 })
   const activeVideoRef = useRef(null)
 
   // Auto-cycle through the cluster items every 3.2s
@@ -726,13 +640,15 @@ const Spread4Right = memo(function Spread4Right({ onPhotoClick }) {
     const rect = e.currentTarget.getBoundingClientRect()
     const x = (e.clientX - rect.left) / rect.width - 0.5
     const y = (e.clientY - rect.top) / rect.height - 0.5
-    setMouseTilt({ rx: -y * 12, ry: x * 14 })
-  }, [])
+    tiltX.set(-y * 12)
+    tiltY.set(x * 14)
+  }, [tiltX, tiltY])
 
   const handleMouseLeave = useCallback(() => {
     setIsHovered(false)
-    setMouseTilt({ rx: 0, ry: 0 })
-  }, [])
+    tiltX.set(0)
+    tiltY.set(0)
+  }, [tiltX, tiltY])
 
   return (
     <div
@@ -938,12 +854,9 @@ const Spread4Right = memo(function Spread4Right({ onPhotoClick }) {
             alignItems: 'center',
             justifyContent: 'center',
             transformStyle: 'preserve-3d',
+            rotateX: tiltX,
+            rotateY: tiltY,
           }}
-          animate={{
-            rotateX: mouseTilt.rx,
-            rotateY: mouseTilt.ry,
-          }}
-          transition={{ type: 'spring', stiffness: 180, damping: 20 }}
         >
           {CLUSTER_ITEMS.map((item, index) => {
             // Compute slot based on active index
