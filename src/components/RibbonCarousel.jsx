@@ -502,6 +502,12 @@ function RibbonCarousel({ onPhotoClick, isViewerOpen = false }) {
 
     let time = 0
     let lastFocalCheck = 0
+    let isMobile = window.innerWidth < 768
+
+    const handleResize = () => {
+      isMobile = window.innerWidth < 768
+    }
+    window.addEventListener('resize', handleResize, { passive: true })
 
     function tick() {
       time += 0.016
@@ -528,10 +534,6 @@ function RibbonCarousel({ onPhotoClick, isViewerOpen = false }) {
         const tiltY = (mx - 0.5) * 4.0
         containerRef.current.style.transform = `perspective(1400px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`
       }
-
-      const winW = window.innerWidth
-      const winH = window.innerHeight
-      const isMobile = winW < 768
 
       // ── Circular Orbit Parameters ──
       const centerX = 58
@@ -633,6 +635,7 @@ function RibbonCarousel({ onPhotoClick, isViewerOpen = false }) {
     rafRef.current = requestAnimationFrame(tick)
 
     return () => {
+      window.removeEventListener('resize', handleResize)
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
   }, [isSectionInView, isViewerOpen])
