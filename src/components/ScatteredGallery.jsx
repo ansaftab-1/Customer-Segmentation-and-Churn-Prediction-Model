@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback, memo } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import { PHOTOS } from '../photosData'
 
 /* ── Heart SVG Badge ── */
@@ -140,12 +140,34 @@ function ScatteredGallery({ onPhotoClick }) {
   const sectionRef = useRef(null)
   const containerRef = useRef(null)
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 })
+  const rectRef = useRef(null)
   const rafRef = useRef(null)
+  const isInView = useInView(sectionRef, { margin: '200px 0px' })
 
-  /* Mouse-tracking parallax effect */
+  // Cache bounding rect to prevent expensive layout thrashing on every mousemove
+  const updateRect = useCallback(() => {
+    if (sectionRef.current) {
+      rectRef.current = sectionRef.current.getBoundingClientRect()
+    }
+  }, [])
+
+  useEffect(() => {
+    updateRect()
+    window.addEventListener('resize', updateRect, { passive: true })
+    window.addEventListener('scroll', updateRect, { passive: true })
+    return () => {
+      window.removeEventListener('resize', updateRect)
+      window.removeEventListener('scroll', updateRect)
+    }
+  }, [updateRect])
+
+  /* Mouse-tracking parallax effect using cached rect */
   const handleMouseMove = useCallback((e) => {
-    const rect = sectionRef.current?.getBoundingClientRect()
-    if (!rect) return
+    if (!rectRef.current) {
+      if (!sectionRef.current) return
+      rectRef.current = sectionRef.current.getBoundingClientRect()
+    }
+    const rect = rectRef.current
 
     // Normalized coordinates (-1 to 1 from center)
     const cx = rect.left + rect.width / 2
@@ -154,12 +176,18 @@ function ScatteredGallery({ onPhotoClick }) {
     mouseRef.current.targetY = (e.clientY - cy) / (rect.height / 2)
   }, [])
 
-  /* ── 60 FPS Smooth Parallax Loop ── */
+  /* ── 60 FPS Smooth Parallax Loop (Active only when section isInView) ── */
   useEffect(() => {
+    if (!isInView) return
     const container = containerRef.current
     if (!container) return
 
+    // Precompute DOM references and parallax factors once to avoid DOM reads in 60fps tick
     const cardElements = container.querySelectorAll('.float-anim')
+    const cardsData = Array.from(cardElements).map((el) => {
+      const factor = parseFloat(el.getAttribute('data-parallax') || '0.5')
+      return { el, maxOffset: 25 * factor }
+    })
 
     function tick() {
       // Lerp mouse position for silky smooth movement
@@ -169,14 +197,12 @@ function ScatteredGallery({ onPhotoClick }) {
       const mx = mouseRef.current.x
       const my = mouseRef.current.y
 
-      cardElements.forEach((el) => {
-        const factor = parseFloat(el.getAttribute('data-parallax') || '0.5')
-        const maxOffset = 25 * factor
-        const px = mx * maxOffset
-        const py = my * maxOffset
-
-        el.style.transform = `translate3d(${px}px, ${py}px, 0)`
-      })
+      for (let i = 0; i < cardsData.length; i++) {
+        const item = cardsData[i]
+        const px = mx * item.maxOffset
+        const py = my * item.maxOffset
+        item.el.style.transform = `translate3d(${px}px, ${py}px, 0)`
+      }
 
       rafRef.current = requestAnimationFrame(tick)
     }
@@ -186,7 +212,7 @@ function ScatteredGallery({ onPhotoClick }) {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
-  }, [])
+  }, [isInView])
 
   return (
     <section
